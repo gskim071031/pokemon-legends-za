@@ -41,29 +41,52 @@ html, body {
 /* -------------------------------
    헤더 (상단 바)
    ------------------------------- */
+
+/* 헤더를 두 줄 구조로 */
 .header {
   position: fixed;
-  inset: 0 0 auto 0;        /* 상단 고정 */
+  inset: 0 0 auto 0;
   display: flex;
-  gap: 0.75rem;
-  align-items: center;
-  padding: 0.6rem 1rem;
-  background: none;
+  flex-direction: column;   /* 세로 스택 */
+  gap: .4rem;
+  padding: .6rem 1rem;
+  background: none;         /* 필요시 그라데이션 제거 */
   z-index: 500;
 }
 
-.header h1 {
+/* 윗줄: 제목 + 검색창 가로 정렬 */
+.topline {
+  display: flex;
+  gap: .75rem;
+  align-items: center;
+}
+
+.topline h1 {
   margin: 0;
   font-size: 1rem;
   color: var(--fg);
-  opacity: 0.95;
+  opacity: .95;
 }
 
-.header .controls {
+#search {
+  background: var(--panel);
+  border: 1px solid #222a39;
+  border-radius: .6rem;
+  padding: .5rem .7rem;
+  color: var(--fg);
+  outline: none;
+  min-width: 240px;
+}
+
+/* 아랫줄: 경계 보기 토글 */
+.subline {
   display: flex;
-  gap: 0.75rem;
   align-items: center;
   color: var(--muted);
+}
+
+.toggle-bounds {
+  user-select: none;
 }
 
 /* -------------------------------
