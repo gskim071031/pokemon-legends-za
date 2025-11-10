@@ -27,7 +27,21 @@
 
   // 경계(디버그 가이드라인)
   const rect = L.rectangle(bounds, { className: 'bounds-rect' });
-  rect.addTo(map);
+  // 기본값: 체크박스 꺼짐 → 초기에는 추가하지 않음
+  
+  // 토글 엘리먼트
+  const toggle = document.getElementById('toggle-bounds');
+  
+  // 초기 상태 반영 (기본 꺼짐이므로 보통은 실행되지 않음)
+  if (toggle && toggle.checked) {
+    rect.addTo(map);
+  }
+  
+  // 변경 시 반영
+  toggle?.addEventListener('change', () => {
+    if (toggle.checked) rect.addTo(map);
+    else rect.removeFrom(map);
+  });
 
   // 레이어 그룹(카테고리별)
   const layers = new Map();
