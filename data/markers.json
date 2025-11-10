@@ -14,9 +14,27 @@
     "emoji": "🧰" },
   
   { "name": "상인",
-    "pos": [1000, 1200 ],
+    "pos": [1000, 1200],
     "type": "npc",
     "note": "물약/화살 판매",
     "tags": ["shop", "npc"],
-    "emoji": "🧑‍🌾" }
+    "emoji": "🧑‍🌾" },
+
+  { "name": "tset1", "pos": [1000, 1300], "type": "tset1", "note": "", "tags": [], "emoji": "🧑‍🌾" },
+  { "name": "tset2", "pos": [1000, 1400], "type": "tset2", "note": "", "tags": [], "emoji": "🧑‍🌾" },
+  { "name": "tset3", "pos": [1000, 1500], "type": "tset3", "note": "", "tags": [], "emoji": "🧑‍🌾" },
+  { "name": "tset4", "pos": [1000, 1600], "type": "tset4", "note": "", "tags": [], "emoji": "🧑‍🌾" },
+  { "name": "tset5", "pos": [1000, 1700], "type": "tset5", "note": "", "tags": [], "emoji": "🧑‍🌾" },
+  { "name": "tset6", "pos": [1000, 1800], "type": "tset6", "note": "", "tags": [], "emoji": "🧑‍🌾" },
+  { "name": "tset7", "pos": [1000, 1900], "type": "tset7", "note": "", "tags": [], "emoji": "🧑‍🌾" },
+  { "name": "tset8", "pos": [1000, 2000], "type": "tset8", "note": "", "tags": [], "emoji": "🧑‍🌾" },
+  { "name": "tset9", "pos": [1000, 2100], "type": "tset9", "note": "", "tags": [], "emoji": "🧑‍🌾" },
+  { "name": "tset10", "pos": [1000, 2200], "type": "tset10", "note": "", "tags": [], "emoji": "🧑‍🌾" },
+  { "name": "tset11", "pos": [1000, 2300], "type": "tset11", "note": "", "tags": [], "emoji": "🧑‍🌾" },
+  { "name": "tset12", "pos": [1000, 2400], "type": "tset12", "note": "", "tags": [], "emoji": "🧑‍🌾" },
+  { "name": "tset13", "pos": [1000, 2500], "type": "tset13", "note": "", "tags": [], "emoji": "🧑‍🌾" },
+  { "name": "tset14", "pos": [1000, 2600], "type": "tset14", "note": "", "tags": [], "emoji": "🧑‍🌾" },
+  { "name": "tset15", "pos": [1000, 2700], "type": "tset15", "note": "", "tags": [], "emoji": "🧑‍🌾" },
+  { "name": "tset16", "pos": [1000, 2800], "type": "tset16", "note": "", "tags": [], "emoji": "🧑‍🌾" },
+  
 ]
