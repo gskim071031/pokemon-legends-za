@@ -42,18 +42,14 @@ html, body {
    헤더 (상단 바)
    ------------------------------- */
 .header {
-  display: none;
-
-  /*
   position: fixed;
   inset: 0 0 auto 0;        /* 상단 고정 */
   display: flex;
   gap: 0.75rem;
   align-items: center;
   padding: 0.6rem 1rem;
-  background: linear-gradient(180deg, rgba(0,0,0,0.65), rgba(0,0,0,0));
+  background: none;
   z-index: 500;
-  */
 }
 
 .header h1 {
@@ -96,6 +92,20 @@ html, body {
    ------------------------------- */
 .leaflet-popup-content {
   font-size: 0.9rem;
+}
+
+/* -------------------------------
+   Zoom Level Display
+   ------------------------------- */
+.zoom-display {
+  background: rgba(10, 12, 18, 0.85);
+  border: 1px solid #1f2635;
+  border-radius: 0.6rem;
+  padding: 0.25rem 0.6rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin-bottom: 38px; /* 줌 버튼 위쪽 간격 */
+  text-align: right;
 }
 
 /* -------------------------------
