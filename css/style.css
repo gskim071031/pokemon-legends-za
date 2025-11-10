@@ -144,7 +144,7 @@ html, body {
   list-style: none;
   margin: 0;
   padding: 0;
-  max-height: 200px;      /* 카테고리 많을 때 스크롤 */
+  max-height: 500px;      /* 카테고리 많을 때 스크롤 */
   overflow: auto;
 }
 
