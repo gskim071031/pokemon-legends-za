@@ -14,6 +14,16 @@
   --panel: #121722;     /* 입력창 / 패널 배경색 */
 }
 
+/* Leaflet 기본 배경(#ddd)을 덮어쓰기 */
+.leaflet-container {
+  background: var(--bg) !important;  /* 원하는 색 */
+}
+
+/* 혹시 map 래퍼에도 명시 */
+#map {
+  background: var(--bg);
+}
+
 /* 전체 레이아웃 설정 */
 * {
   box-sizing: border-box;
@@ -118,10 +128,9 @@ html, body {
 /* -------------------------------
    맵 경계선 (디버그용)
    ------------------------------- */
-/*
 .bounds-rect {
   stroke: #7aa2ff;
   stroke-dasharray: 4 3;
   fill: none;
 }
-*/
+
