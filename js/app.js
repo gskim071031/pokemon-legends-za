@@ -90,7 +90,9 @@
   
   zoomDisplay.onAdd = function () {
     const div = L.DomUtil.create('div', 'zoom-display');
-    div.innerHTML = `Zoom: ${map.getZoom().toFixed(2)}`;
+    const zoom = map.getZoom();
+    const scale = Math.pow(2, zoom);  // 로그 스케일 → 실제 배율
+    div.innerHTML = `×${scale.toFixed(2)}`;
     return div;
   };
   
