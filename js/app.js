@@ -98,8 +98,11 @@
   
   // 줌이 바뀔 때마다 갱신
   map.on('zoomend', () => {
-    document.querySelector('.zoom-display').innerHTML = `Zoom: ${map.getZoom().toFixed(2)}`;
-  });
+  const zoom = map.getZoom();
+  const scale = Math.pow(2, zoom);  // 로그 스케일 → 실제 배율
+  document.querySelector('.zoom-display').innerHTML =
+    `×${scale.toFixed(2)}`;
+});
 
   // 범례
   const legend = L.control({ position: 'bottomright' });
