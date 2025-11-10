@@ -71,11 +71,6 @@
     return { ...s, marker };
   });
 
-  // 레이어 토글 UI
-  const overlays = {};
-  for (const cat of categories) overlays[cat] = layers.get(cat);
-  L.control.layers(null, overlays, { collapsed: false }).addTo(map);
-
   // 검색
   const search = document.getElementById('search');
   search?.addEventListener('keydown', (e) => {
@@ -112,15 +107,50 @@
   const scale = Math.pow(2, zoom);  // 로그 스케일 → 실제 배율
   document.querySelector('.zoom-display').innerHTML =
     `×${scale.toFixed(2)}`;
-});
+  });
 
-  // 범례
-  const legend = L.control({ position: 'bottomright' });
-  legend.onAdd = function () {
-    const div = L.DomUtil.create('div', 'legend');
-    const cats = categories.map(c => `<li>${c}</li>`).join('');
-    div.innerHTML = `<h3>Categories</h3><ul>${cats}</ul>`;
-    return div;
-  };
-  legend.addTo(map);
+  // ===============================
+  // 범례(레이아웃) + 선택창(기능) 통합 패널
+  // ===============================
+  const CombinedPanel = L.Control.extend({
+    options: { position: 'bottomleft' },
+    onAdd: function () {
+      const div = L.DomUtil.create('div', 'legend-panel');
+      // 레이아웃은 범례 스타일
+      let html = '<h3>Categories</h3><ul>';
+      categories.forEach(cat => {
+        // 기능은 선택창(체크박스)로
+        html += `
+          <li>
+            <label>
+              <input type="checkbox" data-cat="${cat}" checked>
+              ${cat}
+            </label>
+          </li>`;
+      });
+      html += '</ul>';
+      div.innerHTML = html;
+  
+      // 패널 클릭이 맵 드래그/줌에 영향 주지 않도록
+      L.DomEvent.disableClickPropagation(div);
+      return div;
+    }
+  });
+  
+  // 패널 생성/표시
+  const combinedPanel = new CombinedPanel().addTo(map);
+  
+  // 체크박스 → 레이어 on/off
+  document
+    .querySelectorAll('.legend-panel input[type="checkbox"]')
+    .forEach(cb => {
+      cb.addEventListener('change', (e) => {
+        const cat = e.target.getAttribute('data-cat');
+        const group = layers.get(cat);
+        if (!group) return;
+        if (e.target.checked) group.addTo(map);
+        else group.removeFrom(map);
+      });
+    });
+  
 })();
