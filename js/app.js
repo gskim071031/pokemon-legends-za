@@ -93,12 +93,6 @@
     }
   });
 
-  // 경계 표시 토글
-  const toggle = document.getElementById('toggle-bounds');
-  toggle?.addEventListener('change', () => {
-    if (toggle.checked) rect.addTo(map); else rect.removeFrom(map);
-  });
-
   // 현재 배율 표시 컨트롤
   const zoomDisplay = L.control({ position: 'bottomright' });
   
