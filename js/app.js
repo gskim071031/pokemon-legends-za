@@ -22,6 +22,12 @@
   overlay.addTo(map);
   map.fitBounds(bounds);
 
+  // 맵 초기화/fitBounds 이후 아무 곳에
+  const uiPanel = document.querySelector('.ui-panel');
+  if (uiPanel) {
+    L.DomEvent.disableClickPropagation(uiPanel); // 패널 안 클릭/스크롤이 맵에 전달되지 않게
+  }
+
   // 헤더 실제 높이를 읽어서 CSS 변수로 반영 (헤더가 1줄/2줄이어도 정확히 맞춤)
   const headerEl = document.querySelector('.header');
   const headerH = headerEl ? Math.round(headerEl.getBoundingClientRect().height) : 92;
@@ -31,22 +37,13 @@
   L.control.zoom({ position: 'bottomright' }).addTo(map);
 
   // 경계(디버그 가이드라인)
-  const rect = L.rectangle(bounds, { className: 'bounds-rect' });
-  // 기본값: 체크박스 꺼짐 → 초기에는 추가하지 않음
-  
-  // 토글 엘리먼트
-  const toggle = document.getElementById('toggle-bounds');
-  
-  // 초기 상태 반영 (기본 꺼짐이므로 보통은 실행되지 않음)
-  if (toggle && toggle.checked) {
-    rect.addTo(map);
-  }
-  
-  // 변경 시 반영
-  toggle?.addEventListener('change', () => {
+  const rect = L.rectangle(bounds, { className: 'bounds-rect' });  // 기본값: 체크박스 꺼짐 → 초기에는 추가하지 않음
+  const toggle = document.getElementById('toggle-bounds');         // 토글 엘리먼트
+  if (toggle && toggle.checked) rect.addTo(map);                   // 초기 상태 반영 (기본 꺼짐이므로 보통은 실행되지 않음)
+  toggle?.addEventListener('change', () => {                       // 변화 시 반영
     if (toggle.checked) rect.addTo(map);
     else rect.removeFrom(map);
-  });
+  }); 
 
   // 레이어 그룹(카테고리별)
   const layers = new Map();
