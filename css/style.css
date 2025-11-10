@@ -100,9 +100,10 @@ html, body {
 /* -------------------------------
    지도 영역
    ------------------------------- */
+:root { --header-h: 92px; } /* 헤더 높이 기본값 */
 #map {
   position: absolute;
-  top: 80px; // 92px
+  top: var(--header-h); /* 헤더 높이 변수로 제어 */
   left: 0; right: 0; bottom: 0;
 }
 
