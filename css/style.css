@@ -22,7 +22,7 @@
 /* 혹시 map 래퍼에도 명시 */
 #map {
   position: absolute;
-  // top: var(--header-h);
+  top: 92px;
   left: 0; right: 0; bottom: 0;
 }
 
