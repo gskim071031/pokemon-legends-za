@@ -78,7 +78,7 @@
           : ``}
       </div>`;
     const marker = L.marker([s.pos[0], s.pos[1]], { icon: icon(s.emoji || '📍') })
-      .bindPopup(popupHtml);
+      .bindPopup(popupHtml, {maxWidth: 420, minWidth: 280});
     // 카테고리(type)별 레이어 그룹에 마커 추가 (→ 화면에 보이게 됨)
     layers.get(s.type)?.addLayer(marker);
     return { ...s, marker };
