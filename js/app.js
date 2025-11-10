@@ -141,6 +141,14 @@
   
   // 패널 생성/표시
   const combinedPanel = new CombinedPanel().addTo(map);
+
+  // 패널(범례+선택창) 안에서 휠/클릭 이벤트가 맵으로 전달되지 않게
+  const stopEls = document.querySelectorAll('.legend-panel, .ui-panel');
+  stopEls.forEach(el => {
+    if (!el) return;
+    L.DomEvent.disableScrollPropagation(el); // 휠 스크롤 막기 (맵 확대/축소 방지)
+    L.DomEvent.disableClickPropagation(el);  // 클릭/드래그 전파도 차단
+  });
   
   // 체크박스 → 레이어 on/off
   document
