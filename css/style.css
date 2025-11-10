@@ -21,7 +21,9 @@
 
 /* 혹시 map 래퍼에도 명시 */
 #map {
-  background: var(--bg);
+  position: absolute;
+  // top: var(--header-h);
+  left: 0; right: 0; bottom: 0;
 }
 
 /* 전체 레이아웃 설정 */
