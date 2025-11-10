@@ -9,10 +9,14 @@
 </head>
 <body>
   <header class="header">
-    <h1>Game Map</h1>
-    <div class="controls">
-      <label><input type="checkbox" id="toggle-bounds" checked> 경계 보기</label>
+    <div class="topline">
+      <h1>Game Map</h1>
       <input id="search" type="search" placeholder="이름/태그 검색 (Enter)">
+    </div>
+    <div class="subline">
+      <label class="toggle-bounds">
+        <input type="checkbox" id="toggle-bounds"> 경계 보기
+      </label>
     </div>
   </header>
   <div id="map" role="application" aria-label="Interactive game map"></div>
