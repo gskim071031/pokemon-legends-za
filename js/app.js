@@ -112,32 +112,148 @@
   });
 
   // ===============================
-  // 범례(레이아웃) + 선택창(기능) 통합 패널
+  // 그룹(큰 분류) + 카테고리(소분류) + 전체 토글 패널
   // ===============================
-  const CombinedPanel = L.Control.extend({
+  
+  // 1) 그룹/카테고리 수집
+  const catByGroup = new Map(); // group -> Set(categories)
+  markers.forEach(m => {
+    const g = m.group || '기타';
+    if (!catByGroup.has(g)) catByGroup.set(g, new Set());
+    catByGroup.get(g).add(m.type);
+  });
+  
+  // 2) 패널 클래스
+  const GroupPanel = L.Control.extend({
     options: { position: 'bottomleft' },
     onAdd: function () {
       const div = L.DomUtil.create('div', 'legend-panel');
-      // 레이아웃은 범례 스타일
-      let html = '<h3>Categories</h3><ul>';
-      categories.forEach(cat => {
-        // 기능은 선택창(체크박스)로
-        html += `
-          <li>
-            <label>
-              <input type="checkbox" data-cat="${cat}" checked>
-              ${cat}
-            </label>
-          </li>`;
-      });
-      html += '</ul>';
-      div.innerHTML = html;
   
-      // 패널 클릭이 맵 드래그/줌에 영향 주지 않도록
+      // 전체 토글
+      let html = `
+        <div class="panel-row panel-head">
+          <label class="chk">
+            <input type="checkbox" data-role="master" checked>
+            전체
+          </label>
+        </div>
+      `;
+  
+      // 그룹별 섹션
+      for (const [g, catsSet] of catByGroup) {
+        const cats = [...catsSet].sort();
+        html += `
+          <div class="panel-group">
+            <div class="panel-row">
+              <label class="chk">
+                <input type="checkbox" data-role="group" data-group="${g}" checked>
+                ${g}
+              </label>
+            </div>
+            <ul>
+              ${cats.map(c => `
+                <li>
+                  <label class="chk">
+                    <input type="checkbox" data-role="cat" data-group="${g}" data-cat="${c}" checked>
+                    ${c}
+                  </label>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        `;
+      }
+  
+      div.innerHTML = html;
+      // 패널 내 이벤트가 맵으로 전파되지 않게
+      L.DomEvent.disableScrollPropagation(div);
       L.DomEvent.disableClickPropagation(div);
       return div;
     }
   });
+  
+  const groupPanel = new GroupPanel().addTo(map);
+  
+  // 3) 유틸: 레이어 on/off
+  function setCategoryVisible(cat, visible) {
+    const grp = layers.get(cat);
+    if (!grp) return;
+    if (visible) grp.addTo(map);
+    else grp.removeFrom(map);
+  }
+  
+  // 4) 상태 반영 도우미들(✔/—/□)
+  function updateGroupState(g) {
+    const catCbs = [...document.querySelectorAll(`input[data-role="cat"][data-group="${g}"]`)];
+    const groupCb = document.querySelector(`input[data-role="group"][data-group="${g}"]`);
+    if (!groupCb || catCbs.length === 0) return;
+    const checkedCnt = catCbs.filter(cb => cb.checked).length;
+    groupCb.indeterminate = checkedCnt > 0 && checkedCnt < catCbs.length;
+    groupCb.checked = checkedCnt === catCbs.length;
+  }
+  
+  function updateMasterState() {
+    const groupCbs = [...document.querySelectorAll(`input[data-role="group"]`)];
+    const master = document.querySelector(`input[data-role="master"]`);
+    const checkedCnt = groupCbs.filter(cb => cb.checked && !cb.indeterminate).length;
+    const allCnt = groupCbs.length;
+    // master는 "모든 그룹이 전부 on"이면 체크, 일부면 indeterminate
+    master.indeterminate = checkedCnt > 0 && checkedCnt < allCnt;
+    master.checked = checkedCnt === allCnt;
+  }
+  
+  // 5) 이벤트 바인딩
+  // 5-1) 카테고리 체크 → 해당 레이어 on/off, 그룹/마스터 상태 갱신
+  document.querySelectorAll('input[data-role="cat"]').forEach(cb => {
+    cb.addEventListener('change', e => {
+      const cat = e.target.getAttribute('data-cat');
+      setCategoryVisible(cat, e.target.checked);
+      const g = e.target.getAttribute('data-group');
+      updateGroupState(g);
+      updateMasterState();
+    });
+  });
+  
+  // 5-2) 그룹 체크 → 소속 카테고리 일괄 on/off
+  document.querySelectorAll('input[data-role="group"]').forEach(cb => {
+    cb.addEventListener('change', e => {
+      const g = e.target.getAttribute('data-group');
+      const catCbs = document.querySelectorAll(`input[data-role="cat"][data-group="${g}"]`);
+      catCbs.forEach(catCb => {
+        if (catCb.checked !== e.target.checked) {
+          catCb.checked = e.target.checked;
+          const cat = catCb.getAttribute('data-cat');
+          setCategoryVisible(cat, catCb.checked);
+        }
+      });
+      updateGroupState(g);
+      updateMasterState();
+    });
+  });
+  
+  // 5-3) 마스터 체크 → 모든 그룹/카테고리 일괄 on/off
+  const masterCb = document.querySelector('input[data-role="master"]');
+  masterCb?.addEventListener('change', e => {
+    const checked = e.target.checked;
+    // 그룹
+    document.querySelectorAll('input[data-role="group"]').forEach(gcb => {
+      gcb.indeterminate = false;
+      gcb.checked = checked;
+    });
+    // 카테고리
+    document.querySelectorAll('input[data-role="cat"]').forEach(ccb => {
+      if (ccb.checked !== checked) {
+        ccb.checked = checked;
+        const cat = ccb.getAttribute('data-cat');
+        setCategoryVisible(cat, checked);
+      }
+    });
+    updateMasterState();
+  });
+  
+  // 초기 indeterminate 정돈
+  for (const [g] of catByGroup) updateGroupState(g);
+  updateMasterState();
   
   // 패널 생성/표시
   const combinedPanel = new CombinedPanel().addTo(map);
