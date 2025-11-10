@@ -1,7 +1,7 @@
 // Leaflet (CRS.Simple) interactive map for a custom game image
 (async function () {
-  const imgWidth = 8192;   // TODO: 원본 맵 이미지의 폭(px)
-  const imgHeight = 8192;  // TODO: 원본 맵 이미지의 높이(px)
+  const imgWidth = 6144;   // TODO: 원본 맵 이미지의 폭(px)
+  const imgHeight = 6144;  // TODO: 원본 맵 이미지의 높이(px)
   const mapImage = 'assets/map.png'; // TODO: 여기에 맵 이미지 파일을 넣으세요.
 
   // 맵 생성
