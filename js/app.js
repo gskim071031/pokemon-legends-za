@@ -67,9 +67,18 @@
 
   // 마커 추가
   const markers = spots.map(s => {
+    const popupHtml = `
+      <div class="gm-popup">
+        <div class="gm-popup-title">${s.name}</div>
+        ${s.note ? `<div class="gm-popup-note">${s.note}</div>` : ``}
+        ${(s.tags && s.tags.length)
+          ? `<div class="gm-popup-tags">
+               ${s.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+             </div>`
+          : ``}
+      </div>`;
     const marker = L.marker([s.pos[0], s.pos[1]], { icon: icon(s.emoji || '📍') })
-      .bindPopup(`<b>${s.name}</b><br>${s.note || ''}<br><small>${(s.tags||[]).join(', ')}</small>`);
-    layers.get(s.type)?.addLayer(marker);
+      .bindPopup(popupHtml);
     return { ...s, marker };
   });
 
