@@ -10,7 +10,8 @@
     minZoom: -3,
     maxZoom: 4,
     zoomSnap: 0.25,
-    wheelPxPerZoomLevel: 120
+    wheelPxPerZoomLevel: 120,
+    zoomControl: false         // 기본 줌 컨트롤 끄기 (나중에 수동 추가)
   });
 
   // 이미지 경계: [ [top, left], [bottom, right] ] = [ [0,0], [imgHeight, imgWidth] ]
@@ -20,6 +21,9 @@
   const overlay = L.imageOverlay(mapImage, bounds, { opacity: 1.0 });
   overlay.addTo(map);
   map.fitBounds(bounds);
+
+  // 기본 줌 버튼을 bottomright로 추가
+  L.control.zoom({ position: 'bottomright' }).addTo(map);
 
   // 경계(디버그 가이드라인)
   const rect = L.rectangle(bounds, { className: 'bounds-rect' });
@@ -79,6 +83,22 @@
   const toggle = document.getElementById('toggle-bounds');
   toggle?.addEventListener('change', () => {
     if (toggle.checked) rect.addTo(map); else rect.removeFrom(map);
+  });
+
+  // 현재 배율 표시 컨트롤
+  const zoomDisplay = L.control({ position: 'bottomright' });
+  
+  zoomDisplay.onAdd = function () {
+    const div = L.DomUtil.create('div', 'zoom-display');
+    div.innerHTML = `Zoom: ${map.getZoom().toFixed(2)}`;
+    return div;
+  };
+  
+  zoomDisplay.addTo(map);
+  
+  // 줌이 바뀔 때마다 갱신
+  map.on('zoomend', () => {
+    document.querySelector('.zoom-display').innerHTML = `Zoom: ${map.getZoom().toFixed(2)}`;
   });
 
   // 범례
