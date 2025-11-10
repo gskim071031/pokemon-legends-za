@@ -19,13 +19,6 @@
   background: var(--bg) !important;  /* 원하는 색 */
 }
 
-/* 혹시 map 래퍼에도 명시 */
-#map {
-  position: absolute;
-  top: 92px;
-  left: 0; right: 0; bottom: 0;
-}
-
 /* 전체 레이아웃 설정 */
 * {
   box-sizing: border-box;
@@ -108,8 +101,9 @@ html, body {
    지도 영역
    ------------------------------- */
 #map {
-  position: fixed;
-  inset: 0;
+  position: absolute;
+  top: 92px;
+  left: 0; right: 0; bottom: 0;
 }
 
 /* -------------------------------
