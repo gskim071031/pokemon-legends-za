@@ -118,8 +118,10 @@ html, body {
 /* -------------------------------
    맵 경계선 (디버그용)
    ------------------------------- */
+/*
 .bounds-rect {
   stroke: #7aa2ff;
   stroke-dasharray: 4 3;
   fill: none;
 }
+*/
