@@ -42,6 +42,9 @@ html, body {
    헤더 (상단 바)
    ------------------------------- */
 .header {
+  display: none;
+
+  /*
   position: fixed;
   inset: 0 0 auto 0;        /* 상단 고정 */
   display: flex;
@@ -50,6 +53,7 @@ html, body {
   padding: 0.6rem 1rem;
   background: linear-gradient(180deg, rgba(0,0,0,0.65), rgba(0,0,0,0));
   z-index: 500;
+  */
 }
 
 .header h1 {
