@@ -79,6 +79,8 @@
       </div>`;
     const marker = L.marker([s.pos[0], s.pos[1]], { icon: icon(s.emoji || '📍') })
       .bindPopup(popupHtml);
+    // 카테고리(type)별 레이어 그룹에 마커 추가 (→ 화면에 보이게 됨)
+    layers.get(s.type)?.addLayer(marker);
     return { ...s, marker };
   });
 
@@ -263,9 +265,6 @@
   // 초기 indeterminate 정돈
   for (const [g] of catByGroup) updateGroupState(g);
   updateMasterState();
-  
-  // 패널 생성/표시
-  const combinedPanel = new CombinedPanel().addTo(map);
 
   // 패널(범례+선택창) 안에서 휠/클릭 이벤트가 맵으로 전달되지 않게
   const stopEls = document.querySelectorAll('.legend-panel, .ui-panel');
@@ -274,7 +273,8 @@
     L.DomEvent.disableScrollPropagation(el); // 휠 스크롤 막기 (맵 확대/축소 방지)
     L.DomEvent.disableClickPropagation(el);  // 클릭/드래그 전파도 차단
   });
-  
+
+  /*
   // 체크박스 → 레이어 on/off
   document
     .querySelectorAll('.legend-panel input[type="checkbox"]')
@@ -287,5 +287,6 @@
         else group.removeFrom(map);
       });
     });
+  */
   
 })();
