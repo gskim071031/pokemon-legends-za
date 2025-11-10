@@ -107,6 +107,48 @@ html, body {
   font-size: 0.9rem;
 }
 
+/* 팝업 컨테이너 */
+.gm-popup {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;              /* 요소 간 전체 간격 */
+}
+
+/* 제목: 굵고 간격 확보 */
+.gm-popup-title {
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.2;
+  color: var(--fg);
+  margin-bottom: .25rem;    /* 제목→노트 간격 */
+}
+
+/* 노트: 본문 톤, 가독성 있는 줄간격 */
+.gm-popup-note {
+  color: #cfd6e6;
+  line-height: 1.45;
+  white-space: pre-wrap;    /* 줄바꿈 보존하면 좋을 때 */
+}
+
+/* 태그 컨테이너 */
+.gm-popup-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem .35rem;
+  margin-top: .15rem;       /* 노트→태그 간격 */
+}
+
+/* 태그 배지 */
+.gm-popup-tags .tag {
+  font-size: .75rem;
+  padding: .15rem .45rem;
+  border-radius: .6rem;
+  background: #1c2436;
+  border: 1px solid #2a344a;
+  color: #9fb3d1;
+  line-height: 1.1;
+}
+
 /* -------------------------------
    Zoom Level Display
    ------------------------------- */
