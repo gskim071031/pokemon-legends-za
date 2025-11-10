@@ -10,7 +10,9 @@
 :root {
   --bg: #738E95;        /* 배경색 */
   --fg: #e7eaf0;        /* 글자색 */
-  --muted: #9aa3b2;     /* 보조 텍스트 색 */
+  --muted: #a8b0bd;     /* 보조 텍스트 색 */
+  --fgpop: #18191A      /* 팝업 글자색 */
+  --mutedpop: #54585E   /* 팝업 보조 텍스트 색 */
   --panel: #121722;     /* 입력창 / 패널 배경색 */
 }
 
@@ -119,13 +121,13 @@ html, body {
   font-weight: 700;
   font-size: 1rem;
   line-height: 1.2;
-  color: var(--fg);
+  color: var(--fgpop);
   margin-bottom: .25rem;    /* 제목→노트 간격 */
 }
 
 /* 노트: 본문 톤, 가독성 있는 줄간격 */
 .gm-popup-note {
-  color: #cfd6e6;
+  color: var(--mutedpop);
   line-height: 1.45;
   white-space: pre-wrap;    /* 줄바꿈 보존하면 좋을 때 */
 }
@@ -143,9 +145,9 @@ html, body {
   font-size: .75rem;
   padding: .15rem .45rem;
   border-radius: .6rem;
-  background: #1c2436;
-  border: 1px solid #2a344a;
-  color: #9fb3d1;
+  background: var(--fg);
+  border: 1px solid var(--muted);
+  color: var(--fgpop);
   line-height: 1.1;
 }
 
