@@ -22,6 +22,11 @@
   overlay.addTo(map);
   map.fitBounds(bounds);
 
+  // 헤더 실제 높이를 읽어서 CSS 변수로 반영 (헤더가 1줄/2줄이어도 정확히 맞춤)
+  const headerEl = document.querySelector('.header');
+  const headerH = headerEl ? Math.round(headerEl.getBoundingClientRect().height) : 92;
+  document.documentElement.style.setProperty('--header-h', `${headerH}px`);
+
   // 기본 줌 버튼을 bottomright로 추가
   L.control.zoom({ position: 'bottomright' }).addTo(map);
 
