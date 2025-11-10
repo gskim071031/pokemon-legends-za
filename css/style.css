@@ -55,8 +55,7 @@ html, body {
   border: 1px solid #1f2635;
   border-radius: .8rem;
   padding: .6rem .8rem;
-  width: clamp(320px, 28vw, 560px);
-  min-width: 320px;
+  width: clamp(300px, 20vw, 550px);
   backdrop-filter: blur(2px);
 }
 
@@ -165,8 +164,7 @@ html, body {
    border-radius: .8rem; 
    padding: .6rem .8rem; 
    color: var(--muted); 
-   min-width: 260px; 
-   width: clamp(280px, 26vw, 520px);
+   width: clamp(300px, 20vw, 550px);
    max-height: 60vh; 
    overflow: auto; 
 }
