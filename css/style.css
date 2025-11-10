@@ -102,7 +102,7 @@ html, body {
    ------------------------------- */
 #map {
   position: absolute;
-  top: 92px;
+  // top: 92px;
   left: 0; right: 0; bottom: 0;
 }
 
