@@ -79,18 +79,41 @@ html, body {
 .toggle-bounds { user-select: none; }
 
 /* -------------------------------
-   검색창 (헤더 오른쪽)
+   검색창 
    ------------------------------- */
-#search {
+/* 제목 아래 검색 3종 세로 배치 */
+.ui-panel .search-col {
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+  margin-top: .6rem;
+}
+
+/* 텍스트 입력 공통 */
+#search-name,
+#search-note {
   background: var(--panel);
   border: 1px solid #222a39;
   border-radius: .6rem;
   padding: .45rem .6rem;
   color: var(--fg);
   outline: none;
-  min-width: 200px;
-  flex: 1;
+  width: 100%;
 }
+
+/* 태그 다중 선택 */
+#search-tags {
+  background: var(--panel);
+  border: 1px solid #222a39;
+  border-radius: .6rem;
+  padding: .35rem .4rem;
+  color: var(--fg);
+  outline: none;
+  width: 100%;
+}
+
+/* 패널 폭은 기존 설정 유지(필요시 조절) */
+.ui-panel { width: clamp(300px, 20vw, 550px); }
 
 /* -------------------------------
    Leaflet 팝업 (마커 클릭 시)
