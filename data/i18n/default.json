@@ -6,14 +6,12 @@
   "search.name.placeholder": "이름 검색",
   "search.note.placeholder": "노트 검색",
   "search.tags.placeholder": "태그 검색",
-  "qtags.suggest.aria": "태그 제안",
   
   "boundary.toggle": "경계 보기",
   "coord.label": "좌표: {y}, {x}",
   
   "zoom.label": "×{scale}",
   
-  "qcategories.title": "카테고리",
   "master.all": "전체",
   "group.other": "ETC",
 
