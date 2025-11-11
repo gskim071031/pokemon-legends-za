@@ -148,6 +148,21 @@ html, body {
   font-size: 0.9rem;
 }
 
+/* 범위 마커(다각형) 기본 스타일 */
+.leaflet-interactive.area-shape {
+  stroke: #7aa2ff;          /* 테두리 */
+  fill: #7aa2ff;            /* 채우기 색(아래 fill-opacity로 반투명) */
+  fill-opacity: .18;
+  stroke-opacity: .9;
+}
+
+/* 호버 시 강조 */
+.leaflet-interactive.area-shape:hover {
+  stroke-width: 3;
+  fill-opacity: .24;
+  cursor: pointer;
+}
+
 /* 팝업 컨테이너 */
 .gm-popup {
   display: flex;
