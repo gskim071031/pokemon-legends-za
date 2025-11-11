@@ -182,10 +182,15 @@ function renderSuggest(showAll = false) {
   } else if (!['and','or','not','(',')'].includes(q)) {
     items = TAGS.filter(t => t.toLowerCase().startsWith(q)).slice(0, 50);
   }
-  if (!items.length) { suggestEl.style.display='none'; suggestEl.innerHTML=''; suggestIdx=-1; return; }
+  if (!items.length) { 
+    suggestEl.style.display='none'; 
+    suggestEl.innerHTML=''; 
+    suggestIdx=-1; 
+    return; 
+  }
   suggestEl.innerHTML = items.map((t,i)=>`<li role="option" data-value="${t}" ${i===0?'aria-selected="true"':''}>${t}</li>`).join('');
   suggestEl.style.display = 'block';
-  suggestIdx = 0;
+  suggestIdx = showAll ? -1 : 0;
 }
 function updateHighlight(nextIdx) {
   const li = [...suggestEl.querySelectorAll('li')];
@@ -204,14 +209,28 @@ function bindTagInputOnce() {
   });
   tagInput.addEventListener('keydown', (e) => {
     const open = suggestEl.style.display === 'block';
-    if (e.key === 'ArrowDown' && open) { e.preventDefault(); updateHighlight(suggestIdx+1); }
-    else if (e.key === 'ArrowUp' && open) { e.preventDefault(); updateHighlight(suggestIdx-1); }
-    else if ((e.key === 'Tab' || e.key === 'Enter') && open) {
+    if (e.key === 'ArrowDown' && open) { 
+      e.preventDefault(); 
+      updateHighlight((suggestIdx < 0 ? 0 : suggestIdx + 1)); 
+    }
+    else if (e.key === 'ArrowUp' && open) { 
       e.preventDefault();
+      updateHighlight((suggestIdx < 0 ? 0 : suggestIdx - 1));
+    }
+    else if ((e.key === 'Tab' || e.key === 'Enter') && open) {
       const li = suggestEl.querySelector('li[aria-selected="true"]');
-      if (li) replaceCurrentToken(li.dataset.value);
-      suggestEl.style.display = 'none';
-      if (e.key === 'Enter') applySearch();
+      if (li) {
+        e.preventDefault();
+        replaceCurrentToken(li.dataset.value);
+        suggestEl.style.display = 'none';
+        if (e.key === 'Enter') applySearch();
+      } else {
+        // 선택이 없으면 자동완성 금지: Enter는 필터만 적용(또는 무시)
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          applySearch();      // 필요 없으면 이 줄 지워도 됨(Enter 무시)
+        }
+      }
     } else if (e.key === 'Escape') {
       suggestEl.style.display = 'none';
     } else if (e.key === 'Enter') {
