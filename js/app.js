@@ -173,13 +173,15 @@ function replaceCurrentToken(text) {
   tagInput.setSelectionRange(newPos, newPos);
   renderSuggest();
 }
-function renderSuggest() {
+function renderSuggest(showAll = false) {
   if (!tagInput) return;
   const q = (getCurrentTokenInfo().token || '').toLowerCase();
-  if (!q || ['and','or','not','(',')'].includes(q)) {
-    suggestEl.style.display = 'none'; suggestEl.innerHTML = ''; suggestIdx = -1; return;
+  let items = [];
+  if (showAll || !q) {
+    items = TAGS.slice(0, 200);
+  } else if (!['and','or','not','(',')'].includes(q)) {
+    items = TAGS.filter(t => t.toLowerCase().startsWith(q)).slice(0, 50);
   }
-  const items = TAGS.filter(t => t.toLowerCase().startsWith(q)).slice(0, 50);
   if (!items.length) { suggestEl.style.display='none'; suggestEl.innerHTML=''; suggestIdx=-1; return; }
   suggestEl.innerHTML = items.map((t,i)=>`<li role="option" data-value="${t}" ${i===0?'aria-selected="true"':''}>${t}</li>`).join('');
   suggestEl.style.display = 'block';
@@ -212,9 +214,22 @@ function bindTagInputOnce() {
       if (e.key === 'Enter') applySearch();
     } else if (e.key === 'Escape') {
       suggestEl.style.display = 'none';
+    } else if (e.key === 'Enter') {
+      const empty = (tagInput.value.trim() === '');
+      if (!open && empty) {
+        e.preventDefault();
+        applySearch();            // 모든 마커 다시 표시
+        renderSuggest(true);      // 모든 태그 목록 열기
+      }
     }
   });
-  tagInput.addEventListener('input', renderSuggest);
+  tagInput.addEventListener('input', () => {
+    const empty = (tagInput.value.trim() === '');
+    renderSuggest(empty);        // 비었으면 전체 태그
+  });
+  tagInput.addEventListener('focus', () => {
+    if (tagInput.value.trim() === '') renderSuggest(true);
+  });
   tagInput.addEventListener('blur', () => setTimeout(()=> suggestEl.style.display='none', 150));
   L.DomEvent.disableScrollPropagation(suggestEl);
   L.DomEvent.disableClickPropagation(suggestEl);
@@ -380,7 +395,8 @@ async function loadMap(mapKey) {
     if (!coordEl) return;
     const y = Math.round(e.latlng.lat), x = Math.round(e.latlng.lng);
     const inBounds = (y >= 0 && y <= imgHeight && x >= 0 && x <= imgWidth);
-    coordEl.textContent = inBounds ? t('coord.label', { y, x }) : t('coord.label', { y:'—', x:'—' });
+    // coordEl.textContent = inBounds ? t('coord.label', { y, x }) : t('coord.label', { y:'—', x:'—' });
+    coordEl.textContent = t('coord.label', { y, x });
   });
 
   // 데이터 로드
@@ -432,7 +448,9 @@ async function loadMap(mapKey) {
   const allTags = new Set();
   markers.forEach(m => (m.tags || []).forEach(t => allTags.add(t)));
   TAGS = [...allTags].sort((a,b) => collator.compare(a,b));
-  if (document.activeElement === tagInput) renderSuggest();
+  if (document.activeElement === tagInput) {
+    renderSuggest(tagInput.value.trim() === '');
+  }
 
   // 그룹 패널 생성 (“기타”는 항상 뒤)
   const OTHER_GROUP = t('group.other');
