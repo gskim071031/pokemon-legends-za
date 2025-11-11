@@ -85,21 +85,53 @@
   });
 
   // 검색
-  const search = document.getElementById('search');
-  search?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      const q = (search.value || '').trim().toLowerCase();
-      if (!q) {
-        // 리셋: 전체 보이기
-        markers.forEach(m => m.marker.setOpacity(1));
-        return;
-      }
-      markers.forEach(m => {
-        const hay = [m.name, m.note, ...(m.tags||[])].join(' ').toLowerCase();
-        m.marker.setOpacity(hay.includes(q) ? 1 : 0.15);
-      });
+  // ------- (A) 태그 목록 수집 후 <select multiple> 채우기 -------
+  const allTags = new Set();
+  markers.forEach(m => (m.tags || []).forEach(t => allTags.add(t)));
+  
+  const tagSelect = document.getElementById('search-tags');
+  if (tagSelect) {
+    [...allTags].sort().forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t; opt.textContent = t;
+      tagSelect.appendChild(opt);
+    });
+  }
+  
+  // ------- (B) 검색 적용 함수 (세 조건 AND) -------
+  function applySearch() {
+    const qName = (document.getElementById('search-name')?.value || '').trim().toLowerCase();
+    const qNote = (document.getElementById('search-note')?.value || '').trim().toLowerCase();
+    const selTags = Array.from(tagSelect?.selectedOptions || []).map(o => o.value);
+  
+    const hasName = qName.length > 0;
+    const hasNote = qNote.length > 0;
+    const hasTags = selTags.length > 0;
+  
+    // 아무 조건도 없으면 원복
+    if (!hasName && !hasNote && !hasTags) {
+      markers.forEach(m => m.marker.setOpacity(1));
+      return;
     }
+  
+    markers.forEach(m => {
+      const nameOk = !hasName || (m.name || '').toLowerCase().includes(qName);
+      const noteOk = !hasNote || (m.note || '').toLowerCase().includes(qNote);
+      const tagsOk = !hasTags || (m.tags || []).some(t => selTags.includes(t));
+      m.marker.setOpacity(nameOk && noteOk && tagsOk ? 1 : 0.15);
+    });
+  }
+  
+  // ------- (C) 이벤트 바인딩 -------
+  // 이름/노트는 Enter로 적용
+  document.getElementById('search-name')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') applySearch();
   });
+  document.getElementById('search-note')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') applySearch();
+  });
+  // 태그는 선택 변경 즉시 적용
+  tagSelect?.addEventListener('change', applySearch);
 
   // 현재 배율 표시 컨트롤
   const zoomDisplay = L.control({ position: 'bottomright' });
