@@ -69,6 +69,7 @@ html, body {
   padding: .6rem .8rem;
   width: clamp(300px, 20vw, 550px);
   backdrop-filter: blur(2px);
+  max-height: 40vh; 
 }
 
 .ui-panel .topline {
