@@ -254,7 +254,7 @@ html, body {
    border-radius: .8rem; 
    padding: .6rem .8rem; 
    color: var(--muted); 
-   width: clamp(300px, 20vw, 550px);
+   width: clamp(200px, 15vw, 450px);
    max-height: 60vh; 
    overflow: auto; 
 }
