@@ -25,16 +25,16 @@
     "note": "경비 주의",
     "tags": ["chest","epic"],
     "emoji": "🧰",
-    "stroke": "#3fb950",      // 테두리
-    "fill": "#3fb950",        // 내부색
-    "fillOpacity": 0.2,       // 내부 투명도(0~1)
-    "weight": 2 },            // 선 두께
+    "stroke": "#3fb950",
+    "fill": "#3fb950",
+    "fillOpacity": 0.2,
+    "weight": 2 },
 
   { "name": "보안 구역(원)",
     "shape": "area",
     "area": "circle",
-    "center": [3000, 5200],   // [y, x]
-    "radius": 350,            // px(=이미지 좌표 단위)
+    "center": [3000, 5200],
+    "radius": 350,
     "type": "npc",
     "group": "NPC",
     "note": "경비 순찰 범위",
