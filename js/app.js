@@ -86,6 +86,23 @@ function dimShape(layer, show, s) {
     layer.setStyle({ color: base.color, fillColor: base.fillColor, opacity: 0.3, fillOpacity: Math.max(0.04, (base.fillOpacity||0.18)*0.35), weight: base.weight });
   }
 }
+function ensureZoomDisplay(){
+  let el = document.querySelector('.zoom-display');
+  if(!el){
+    el = document.createElement('div');
+    el.className = 'zoom-display';
+    el.id = 'zoom-display';
+    el.setAttribute('aria-live','polite');
+    document.body.appendChild(el);
+  }
+  return el;
+}
+function setZoomLabel(){
+  const el = ensureZoomDisplay();
+  // Leaflet는 로그 스케일 → 2^zoom 로 표시(원하면 소수점 자리 조절)
+  const scale = Math.pow(2, map.getZoom());
+  el.textContent = t ? t('zoom.label', { scale: scale.toFixed(2) }) : `배율 ×${scale.toFixed(2)}`;
+}
 
 /* ===========================
    3) 태그: 파서(AND/OR/NOT,( )) + 자동완성
@@ -561,6 +578,9 @@ async function loadMap(mapKey) {
     zoomControl: false,
     attributionControl: false
   });
+  ensureZoomDisplay();
+  map.on('zoomend', setZoomLabel);
+  setZoomLabel();
   L.control.zoom({ position: 'bottomright' }).addTo(map);
 
   // 스위처/태그입력 바인딩
