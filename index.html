@@ -10,32 +10,26 @@
 <body>
   <!-- 떠 있는 UI 패널 -->
   <div class="ui-panel">
-    <h1>Game Map</h1>
+    <h1 id="i-title"></h1>
   
-    <!-- 검색: 이름 / 노트 / 태그(선택식) -->
     <div class="search-col">
-      <input id="search-name" type="search" placeholder="이름 검색 (Enter)">
-      <input id="search-note" type="search" placeholder="노트 검색 (Enter)">
-      
-      <!-- 태그: 자동완성 + 고급(AND/OR/NOT,( )) -->
+      <input id="search-name" type="search">
+      <input id="search-note" type="search">
       <div class="tag-search">
-        <input id="search-tags" type="text" placeholder="태그 입력 (Enter)">
-        <ul id="tag-suggest" class="tag-suggest" role="listbox" aria-label="태그 제안"></ul>
+        <input id="search-tags" type="text">
+        <ul id="tag-suggest" class="tag-suggest" role="listbox"></ul> <!-- aria는 JS에서 주입 -->
       </div>
     </div>
-
-    <!-- 커서 좌표 표시 (이미지 기준 y, x) -->
+  
     <div class="coord-row">
-      <span id="cursor-pos" aria-live="polite">좌표: — , —</span>
+      <span id="cursor-pos"></span> <!-- 좌표 라벨도 JS가 주입 -->
     </div>
   
-    <!-- 경계 보기 -->
     <div class="subline">
       <label class="toggle-bounds">
-        <input type="checkbox" id="toggle-bounds"> 경계 보기
+        <input type="checkbox" id="toggle-bounds"><span id="i-boundary-label"></span>
       </label>
     </div>
-    
   </div>
 
   <!-- 맵은 전체 화면 -->
