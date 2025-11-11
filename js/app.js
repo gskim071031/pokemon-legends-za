@@ -58,9 +58,7 @@ function t(key, params = {}) {
   coordEl.textContent = t('coord.label', { y: '—', x: '—' });
 
   
-  // 커서 좌표 표시 (이미지 픽셀 기준: [y, x])
-  const coordEl = document.getElementById('cursor-pos');
-  
+  // 커서 좌표 표시 (이미지 픽셀 기준: [y, x])  
   function updateCursorPos(latlng) {
     if (!coordEl) return;
     const y = latlng.lat; // CRS.Simple: lat=y, lng=x
