@@ -199,6 +199,20 @@ html, body {
   line-height: 1.1;
 }
 
+/* 이모지 핀의 정확한 센터 정렬 박스 */
+.emoji-pin { background: transparent; border: 0; }
+.emoji-pin .emoji-box {
+  /* 아이콘 박스 크기와 동일해야 함 */
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  line-height: 24px;            /* 폰트의 baseline 영향 최소화 */
+  /* 필요시 미세 보정(환경별 폰트 렌더 차이): */
+  --emoji-dx: 0px;              /* +x → 오른쪽, -x → 왼쪽 */
+  --emoji-dy: 0px;              /* +y → 아래, -y → 위 */
+  transform: translate(var(--emoji-dx), var(--emoji-dy));
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.6));
+}
+
 /* -------------------------------
    Zoom Level Display
    ------------------------------- */
