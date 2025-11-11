@@ -61,8 +61,8 @@ function t(key, params = {}) {
   // 커서 좌표 표시 (이미지 픽셀 기준: [y, x])  
   function updateCursorPos(latlng) {
     if (!coordEl) return;
-    const y = latlng.lat; // CRS.Simple: lat=y, lng=x
-    const x = latlng.lng;
+    const y = Math.round(latlng.lat); // CRS.Simple: lat=y, lng=x
+    const x = Math.round(latlng.lng);
     const inBounds = (y >= 0 && y <= imgHeight && x >= 0 && x <= imgWidth);
     // coordEl.textContent = inBounds ? t('coord.label', { y, x }) : t('coord.label', { y: '—', x: '—' });
     coordEl.textContent = t('coord.label', { y, x });
