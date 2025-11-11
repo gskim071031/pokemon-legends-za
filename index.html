@@ -19,10 +19,14 @@
       
       <!-- 태그: 자동완성 + 고급(AND/OR/NOT,( )) -->
       <div class="tag-search">
-        <input id="search-tags" type="text"
-               placeholder="태그 입력 (여러 개 공백 구분, AND/OR/NOT,( ) 지원, Tab/↑↓/Enter)">
+        <input id="search-tags" type="text" placeholder="태그 입력 (Enter)">
         <ul id="tag-suggest" class="tag-suggest" role="listbox" aria-label="태그 제안"></ul>
       </div>
+    </div>
+
+    <!-- 커서 좌표 표시 (이미지 기준 y, x) -->
+    <div class="coord-row">
+      <span id="cursor-pos" aria-live="polite">좌표: — , —</span>
     </div>
   
     <!-- 경계 보기 -->
