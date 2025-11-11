@@ -1,6 +1,6 @@
 # Pokémon Legends Z-A Interactive Map
 
-> **Pokémon Legends: Z-A**를 위한 **인터랙티브 맵(Interactive Map)** 프로젝트
+> **Pokémon Legends: Z-A**를 위한 **인터랙티브 맵(Interactive Map)** 프로젝트 \
 > 메인 맵과 서브 맵, 핀/구역 마커, 태그 검색, 다국어 등 기능 지원
 
 ---
@@ -59,7 +59,7 @@ pokemon-legends-za/
 ### JSON 마커 데이터
 
 #### 핀 마커
-```json
+```
 {
   "name": marker_name,
 
@@ -75,7 +75,7 @@ pokemon-legends-za/
 ```
 
 #### 다각형 구역 마커
-```json
+```
 {
   "name": marker_name,
 
@@ -96,7 +96,7 @@ pokemon-legends-za/
 ```
 
 #### 원형 구역 마커
-```json
+```
 {
   "name": marker_name,
 
