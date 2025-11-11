@@ -43,6 +43,16 @@ html, body {
 }
 .leaflet-container { background: var(--bg) !important; }
 
+/* 패널 내 라인 간격 */
+.subline + .subline { margin-top: .35rem; }
+
+/* 그리드 도트(옵션): 아주 작은 점이면 보이기 쉬워짐 */
+.leaflet-grid-dot {
+  background: #fff;
+  border-radius: 50%;
+  width: 2px; height: 2px;
+}
+
 /* -------------------------------
    떠 있는 UI 패널 (왼쪽 위)
    ------------------------------- */
