@@ -19,10 +19,10 @@ let TAGS = [];              // 태그 자동완성 소스
 
 // 여러 맵 구성 (경로/크기 네 리소스에 맞춰 수정)
 const MAPS = {
-  main: { key:'main', label:'메인 맵',  img:'assets/main.png',  width:6144, height:6144, markers:'data/markers_main.json' },
-  sub1: { key:'sub1', label:'서브 맵 1', img:'assets/sub1.png', width:2304, height:2304, markers:'data/markers_sub1.json' },
-  sub2: { key:'sub2', label:'서브 맵 2', img:'assets/sub2.png', width:2304, height:2304, markers:'data/markers_sub2.json' },
-  sub3: { key:'sub3', label:'서브 맵 3', img:'assets/sub3.png', width:2304, height:2304, markers:'data/markers_sub3.json' }
+  main: { key:'main', labelKey:'maps.main', img:'assets/main.png',  width:6144, height:6144, markers:'data/markers_main.json' },
+  sub1: { key:'sub1', labelKey:'maps.sub1', img:'assets/sub1.png', width:2304, height:2304, markers:'data/markers_sub1.json' },
+  sub2: { key:'sub2', labelKey:'maps.sub2', img:'assets/sub2.png', width:2304, height:2304, markers:'data/markers_sub2.json' },
+  sub3: { key:'sub3', labelKey:'maps.sub3', img:'assets/sub3.png', width:2304, height:2304, markers:'data/markers_sub3.json' }
 };
 let ACTIVE_MAP = MAPS.main;
 
@@ -334,7 +334,7 @@ function renderSwitcher() {
   Object.values(MAPS).forEach(m => {
     const btn = document.createElement('button');
     btn.textContent = m.label;
-    btn.dataset.mapKey = m.key;
+    btn.dataset.mapKey = t(m.labelKey);
     if (m.key === ACTIVE_MAP.key) btn.classList.add('active');
     btn.addEventListener('click', () => loadMap(m.key));
     el.appendChild(btn);
