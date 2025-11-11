@@ -89,26 +89,212 @@
   const allTags = new Set();
   markers.forEach(m => (m.tags || []).forEach(t => allTags.add(t)));
   
-  const tagSelect = document.getElementById('search-tags');
-  if (tagSelect) {
-    [...allTags].sort().forEach(t => {
-      const opt = document.createElement('option');
-      opt.value = t; opt.textContent = t;
-      tagSelect.appendChild(opt);
-    });
+  // ===============================
+  // 태그 자동완성 + 고급 논리 검색(AND/OR/NOT,( ))
+  // ===============================
+  
+  // 모든 태그 수집
+  const allTags = new Set();
+  markers.forEach(m => (m.tags || []).forEach(t => allTags.add(t)));
+  const TAGS = [...allTags].sort();
+  
+  const tagInput = document.getElementById('search-tags');
+  const suggestEl = document.getElementById('tag-suggest');
+  let suggestIdx = -1;  // 키보드 선택 인덱스
+  
+  // 현재 커서 기준 "편집 중 토큰" 추출
+  function getCurrentTokenInfo() {
+    const val = tagInput.value;
+    const pos = tagInput.selectionStart ?? val.length;
+    // 왼쪽으로 공백/괄호 전까지, 오른쪽으로 공백/괄호 전까지
+    const left = val.slice(0, pos);
+    const right = val.slice(pos);
+    const leftMatch = left.match(/([^\s()]+)$/);   // 공백/괄호가 아닌 마지막 토큰
+    const rightMatch = right.match(/^([^\s()]*)/);
+    const start = leftMatch ? pos - leftMatch[1].length : pos;
+    const end = pos + (rightMatch ? rightMatch[1].length : 0);
+    const token = val.slice(start, end);
+    return { token, start, end, pos, val };
   }
   
-  // ------- (B) 검색 적용 함수 (세 조건 AND) -------
+  // 토큰 치환 (자동완성 적용)
+  function replaceCurrentToken(text) {
+    const { start, end, val } = getCurrentTokenInfo();
+    tagInput.value = val.slice(0, start) + text + val.slice(end);
+    const newPos = start + text.length;
+    tagInput.setSelectionRange(newPos, newPos);
+    renderSuggest(); // 토큰 바뀌었으니 제안 새로고침
+  }
+  
+  // 제안 렌더 (현재 토큰 prefix 기반)
+  function renderSuggest() {
+    const { token } = getCurrentTokenInfo();
+    const q = (token || '').toLowerCase();
+  
+    // 연산자나 괄호 토큰이면 제안 숨김
+    if (!q || ['and','or','not','(',')'].includes(q)) {
+      suggestEl.style.display = 'none';
+      suggestEl.innerHTML = '';
+      suggestIdx = -1;
+      return;
+    }
+  
+    const items = TAGS.filter(t => t.toLowerCase().startsWith(q)).slice(0, 50);
+    if (!items.length) {
+      suggestEl.style.display = 'none';
+      suggestEl.innerHTML = '';
+      suggestIdx = -1;
+      return;
+    }
+  
+    suggestEl.innerHTML = items.map((t,i) =>
+      `<li role="option" data-value="${t}" ${i===0?'aria-selected="true"':''}>${t}</li>`
+    ).join('');
+    suggestEl.style.display = 'block';
+    suggestIdx = 0;
+  }
+  
+  // 제안에서 특정 인덱스 선택 상태 업데이트
+  function updateHighlight(nextIdx) {
+    const li = [...suggestEl.querySelectorAll('li')];
+    if (!li.length) return;
+    suggestIdx = (nextIdx + li.length) % li.length;
+    li.forEach((el, i) => el.setAttribute('aria-selected', i === suggestIdx ? 'true' : 'false'));
+  }
+  
+  // 클릭으로 제안 선택
+  suggestEl.addEventListener('click', (e) => {
+    const li = e.target.closest('li');
+    if (!li) return;
+    replaceCurrentToken(li.dataset.value);
+    suggestEl.style.display = 'none';
+  });
+  
+  // 키보드: 입력/탭/화살표/엔터 처리
+  tagInput.addEventListener('keydown', (e) => {
+    const hasList = suggestEl.style.display === 'block';
+  
+    if (e.key === 'ArrowDown' && hasList) {
+      e.preventDefault();
+      updateHighlight(suggestIdx + 1);
+    } else if (e.key === 'ArrowUp' && hasList) {
+      e.preventDefault();
+      updateHighlight(suggestIdx - 1);
+    } else if ((e.key === 'Tab' || e.key === 'Enter') && hasList) {
+      e.preventDefault();
+      const li = suggestEl.querySelector('li[aria-selected="true"]');
+      if (li) replaceCurrentToken(li.dataset.value);
+      suggestEl.style.display = 'none';
+      if (e.key === 'Enter') applySearch(); // Enter면 바로 검색
+    } else if (e.key === 'Escape') {
+      suggestEl.style.display = 'none';
+    }
+  });
+  
+  // 입력 변화 시 제안 갱신
+  tagInput.addEventListener('input', renderSuggest);
+  tagInput.addEventListener('blur', () => {
+    // 포커스 아웃 시 약간의 지연 후 닫기(클릭 선택 허용)
+    setTimeout(() => suggestEl.style.display = 'none', 150);
+  });
+  
+  // 패널 내부에서 휠/클릭 전파 방지(맵 확대/드래그 방지)
+  L.DomEvent.disableScrollPropagation(suggestEl);
+  L.DomEvent.disableClickPropagation(suggestEl);
+  
+  // -------------------------------
+  // 불리언 파서 (AND/OR/NOT, 괄호, 공백 AND)
+  // -------------------------------
+  function tokenize(expr) {
+    // 괄호는 분리, 연산자는 소문자로 정규화
+    const raw = expr
+      .replace(/\(/g,' ( ')
+      .replace(/\)/g,' ) ')
+      .trim()
+      .split(/\s+/)
+      .map(t => t.toLowerCase());
+    return raw.filter(Boolean);
+  }
+  
+  function parseExpr(tokens) {
+    // 재귀 하향식 파서: E = T (OR T)*
+    let [node, rest] = parseTerm(tokens);
+    while (rest[0] === 'or') {
+      const [rhs, rest2] = parseTerm(rest.slice(1));
+      node = { op:'or', a:node, b:rhs };
+      rest = rest2;
+    }
+    return [node, rest];
+  }
+  function parseTerm(tokens) {
+    // T = F (AND F)* ; AND 생략 허용(암시적 AND)
+    let [node, rest] = parseFactor(tokens);
+    while (rest.length && rest[0] !== ')' && rest[0] !== 'or') {
+      // 'and'면 소모, 아니면 공백 AND
+      if (rest[0] === 'and') rest = rest.slice(1);
+      const [rhs, rest2] = parseFactor(rest);
+      node = { op:'and', a:node, b:rhs };
+      rest = rest2;
+    }
+    return [node, rest];
+  }
+  function parseFactor(tokens) {
+    // F = (NOT)* P
+    let notCnt = 0;
+    while (tokens[0] === 'not') {
+      notCnt++; tokens = tokens.slice(1);
+    }
+    let [node, rest] = parsePrimary(tokens);
+    if (notCnt % 2 === 1) node = { op:'not', a:node };
+    return [node, rest];
+  }
+  function parsePrimary(tokens) {
+    // P = '(' E ')' | TAG
+    if (!tokens.length) return [{op:'lit', tag:''}, tokens];
+    const t = tokens[0];
+    if (t === '(') {
+      const [node, rest] = parseExpr(tokens.slice(1));
+      if (rest[0] === ')') return [node, rest.slice(1)];
+      return [node, rest]; // 괄호 짝이 안 맞아도 관대하게
+    }
+    if (t === ')' || t === 'and' || t === 'or' || t === 'not') {
+      // 잘못된 위치의 연산자 → 빈 식
+      return [{op:'lit', tag:''}, tokens.slice(1)];
+    }
+    return [{op:'lit', tag:t}, tokens.slice(1)];
+  }
+  
+  function evalAst(ast, tagSet) {
+    if (!ast) return true;
+    switch (ast.op) {
+      case 'and': return evalAst(ast.a, tagSet) && evalAst(ast.b, tagSet);
+      case 'or':  return evalAst(ast.a, tagSet) || evalAst(ast.b, tagSet);
+      case 'not': return !evalAst(ast.a, tagSet);
+      case 'lit': return ast.tag ? tagSet.has(ast.tag) : true;
+      default:    return true;
+    }
+  }
+  
+  // -------------------------------
+  // applySearch() 교체: 이름/노트 + 논리 태그식
+  // -------------------------------
   function applySearch() {
     const qName = (document.getElementById('search-name')?.value || '').trim().toLowerCase();
     const qNote = (document.getElementById('search-note')?.value || '').trim().toLowerCase();
-    const selTags = Array.from(tagSelect?.selectedOptions || []).map(o => o.value);
+    const qTags = (document.getElementById('search-tags')?.value || '').trim();
   
-    const hasName = qName.length > 0;
-    const hasNote = qNote.length > 0;
-    const hasTags = selTags.length > 0;
+    const hasName = !!qName;
+    const hasNote = !!qNote;
+    const hasTags = !!qTags;
   
-    // 아무 조건도 없으면 원복
+    let ast = null;
+    if (hasTags) {
+      try {
+        const tokens = tokenize(qTags);
+        [ast] = parseExpr(tokens);
+      } catch (_) { ast = null; }
+    }
+  
     if (!hasName && !hasNote && !hasTags) {
       markers.forEach(m => m.marker.setOpacity(1));
       return;
@@ -117,21 +303,23 @@
     markers.forEach(m => {
       const nameOk = !hasName || (m.name || '').toLowerCase().includes(qName);
       const noteOk = !hasNote || (m.note || '').toLowerCase().includes(qNote);
-      const tagsOk = !hasTags || (m.tags || []).some(t => selTags.includes(t));
-      m.marker.setOpacity(nameOk && noteOk && tagsOk ? 1 : 0.15);
+      const tagOk  = !hasTags || evalAst(ast, new Set(m.tags || []));
+      m.marker.setOpacity(nameOk && noteOk && tagOk ? 1 : 0.15);
     });
   }
   
-  // ------- (C) 이벤트 바인딩 -------
-  // 이름/노트는 Enter로 적용
+  // 이름/노트 Enter 검색 (기존처럼)
   document.getElementById('search-name')?.addEventListener('keydown', e => {
     if (e.key === 'Enter') applySearch();
   });
   document.getElementById('search-note')?.addEventListener('keydown', e => {
     if (e.key === 'Enter') applySearch();
   });
-  // 태그는 선택 변경 즉시 적용
-  tagSelect?.addEventListener('change', applySearch);
+  // 태그 입력은 Enter로 즉시 검색
+  tagInput?.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && suggestEl.style.display !== 'block') applySearch();
+  });
+  
 
   // 현재 배율 표시 컨트롤
   const zoomDisplay = L.control({ position: 'bottomright' });
