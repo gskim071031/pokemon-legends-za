@@ -16,10 +16,13 @@
     <div class="search-col">
       <input id="search-name" type="search" placeholder="이름 검색 (Enter)">
       <input id="search-note" type="search" placeholder="노트 검색 (Enter)">
-      <!-- 존재하는 태그 목록으로 채워질 다중 선택 -->
-      <select id="search-tags" multiple size="5" aria-label="태그 선택">
-        <!-- JS에서 옵션 자동 생성 -->
-      </select>
+      
+      <!-- 태그: 자동완성 + 고급(AND/OR/NOT,( )) -->
+      <div class="tag-search">
+        <input id="search-tags" type="text"
+               placeholder="태그 입력 (여러 개 공백 구분, AND/OR/NOT,( ) 지원, Tab/↑↓/Enter)">
+        <ul id="tag-suggest" class="tag-suggest" role="listbox" aria-label="태그 제안"></ul>
+      </div>
     </div>
   
     <!-- 경계 보기 -->
