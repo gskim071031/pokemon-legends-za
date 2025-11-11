@@ -10,10 +10,19 @@
 <body>
   <!-- 떠 있는 UI 패널 -->
   <div class="ui-panel">
-    <div class="topline">
-      <h1>Game Map</h1>
-      <input id="search" type="search" placeholder="이름/태그 검색 (Enter)">
+    <h1>Game Map</h1>
+  
+    <!-- 검색: 이름 / 노트 / 태그(선택식) -->
+    <div class="search-col">
+      <input id="search-name" type="search" placeholder="이름 검색 (Enter)">
+      <input id="search-note" type="search" placeholder="노트 검색 (Enter)">
+      <!-- 존재하는 태그 목록으로 채워질 다중 선택 -->
+      <select id="search-tags" multiple size="5" aria-label="태그 선택">
+        <!-- JS에서 옵션 자동 생성 -->
+      </select>
     </div>
+  
+    <!-- 경계 보기 -->
     <div class="subline">
       <label class="toggle-bounds">
         <input type="checkbox" id="toggle-bounds"> 경계 보기
