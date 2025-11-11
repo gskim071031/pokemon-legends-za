@@ -66,22 +66,40 @@
   categories.forEach(cat => layers.set(cat, L.layerGroup().addTo(map)));
 
   // 마커 추가
-  const markers = spots.map(s => {
-    const popupHtml = `
-      <div class="gm-popup">
-        <div class="gm-popup-title">${s.name}</div>
-        ${s.note ? `<div class="gm-popup-note">${s.note}</div>` : ``}
-        ${(s.tags && s.tags.length)
-          ? `<div class="gm-popup-tags">
-               ${s.tags.map(t => `<span class="tag">${t}</span>`).join('')}
-             </div>`
-          : ``}
-      </div>`;
-    const marker = L.marker([s.pos[0], s.pos[1]], { icon: icon(s.emoji || '📍') })
-      .bindPopup(popupHtml, {maxWidth: 420, minWidth: 280});
-    // 카테고리(type)별 레이어 그룹에 마커 추가 (→ 화면에 보이게 됨)
-    layers.get(s.type)?.addLayer(marker);
-    return { ...s, marker };
+  const markers = []; // point/area 공통으로 여기 기록
+  
+  spots.forEach(s => {
+    const layerGroup = layers.get(s.type);
+    if (!layerGroup) return;
+  
+    const popupHtml = makePopupHtml(s);
+  
+    if (s.shape === 'area' && Array.isArray(s.poly) && s.poly.length >= 3) {
+      // 1) 다각형 생성
+      const polyLatLngs = s.poly.map(p => [p[0], p[1]]); // [y,x] 그대로
+      const poly = L.polygon(polyLatLngs, { className: 'area-shape' });
+      poly.bindPopup(popupHtml);
+      layerGroup.addLayer(poly);
+  
+      // 2) 중심점에 이모지 핀(팝업 공유)
+      const center = poly.getBounds().getCenter(); // 무게중심 근사
+      const pin = L.marker([center.lat, center.lng], { icon: icon(s.emoji || '📍') })
+                   .bindPopup(popupHtml, { maxWidth: 420, minWidth: 280 });
+      layerGroup.addLayer(pin);
+  
+      // 3) 클릭 시 핀 팝업 열기(다각형 클릭해도 같은 팝업)
+      poly.on('click', () => pin.openPopup());
+  
+      // 검색/토글을 위해 둘 다 저장
+      markers.push({ ...s, marker: pin, poly });
+  
+    } else {
+      // 디폴트: 포인트 마커
+      const pin = L.marker([s.pos[0], s.pos[1]], { icon: icon(s.emoji || '📍') })
+                   .bindPopup(popupHtml, { maxWidth: 420, minWidth: 280 });
+      layerGroup.addLayer(pin);
+      markers.push({ ...s, marker: pin, poly: null });
+    }
   });
   
   // ===============================
@@ -274,34 +292,43 @@
   // applySearch() 교체: 이름/노트 + 논리 태그식
   // -------------------------------
   function applySearch() {
-    const qName = (document.getElementById('search-name')?.value || '').trim().toLowerCase();
-    const qNote = (document.getElementById('search-note')?.value || '').trim().toLowerCase();
-    const qTags = (document.getElementById('search-tags')?.value || '').trim();
-  
-    const hasName = !!qName;
-    const hasNote = !!qNote;
-    const hasTags = !!qTags;
-  
-    let ast = null;
-    if (hasTags) {
-      try {
-        const tokens = tokenize(qTags);
-        [ast] = parseExpr(tokens);
-      } catch (_) { ast = null; }
-    }
-  
-    if (!hasName && !hasNote && !hasTags) {
-      markers.forEach(m => m.marker.setOpacity(1));
-      return;
-    }
-  
-    markers.forEach(m => {
-      const nameOk = !hasName || (m.name || '').toLowerCase().includes(qName);
-      const noteOk = !hasNote || (m.note || '').toLowerCase().includes(qNote);
-      const tagOk  = !hasTags || evalAst(ast, new Set(m.tags || []));
-      m.marker.setOpacity(nameOk && noteOk && tagOk ? 1 : 0.15);
-    });
+  const qName = (document.getElementById('search-name')?.value || '').trim().toLowerCase();
+  const qNote = (document.getElementById('search-note')?.value || '').trim().toLowerCase();
+  const qTags = (document.getElementById('search-tags')?.value || '').trim();
+
+  const hasName = !!qName, hasNote = !!qNote, hasTags = !!qTags;
+
+  let ast = null;
+  if (hasTags) {
+    try {
+      const tokens = tokenize(qTags);
+      [ast] = parseExpr(tokens);
+    } catch (_) { ast = null; }
   }
+
+  const dim = 0.15; // 감쇠
+  if (!hasName && !hasNote && !hasTags) {
+    markers.forEach(m => {
+      m.marker.setOpacity(1);
+      if (m.poly) m.poly.setStyle({ fillOpacity:.18, opacity:.9 });
+    });
+    return;
+  }
+
+  markers.forEach(m => {
+    const nameOk = !hasName || (m.name || '').toLowerCase().includes(qName);
+    const noteOk = !hasNote || (m.note || '').toLowerCase().includes(qNote);
+    const tagOk  = !hasTags || evalAst(ast, new Set(m.tags || []));
+    const show = nameOk && noteOk && tagOk;
+
+    m.marker.setOpacity(show ? 1 : dim);
+    if (m.poly) {
+      m.poly.setStyle(show
+        ? { fillOpacity:.18, opacity:.9 }
+        : { fillOpacity:.06, opacity:.3 });
+    }
+  });
+}
   
   // 이름/노트 Enter 검색 (기존처럼)
   document.getElementById('search-name')?.addEventListener('keydown', e => {
