@@ -70,6 +70,7 @@ html, body {
   width: clamp(300px, 20vw, 550px);
   backdrop-filter: blur(2px);
   max-height: 40vh; 
+  overflow: auto;
 }
 
 .ui-panel .topline {
