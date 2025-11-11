@@ -22,6 +22,31 @@
   overlay.addTo(map);
   map.fitBounds(bounds);
 
+  
+  // 커서 좌표 표시 (이미지 픽셀 기준: [y, x])
+  const coordEl = document.getElementById('cursor-pos');
+  
+  function updateCursorPos(latlng) {
+    if (!coordEl) return;
+    const y = latlng.lat; // CRS.Simple: lat=y, lng=x
+    const x = latlng.lng;
+    const inBounds = (y >= 0 && y <= imgHeight && x >= 0 && x <= imgWidth);
+    if (inBounds) {
+      coordEl.textContent = `좌표: ${Math.round(y)}, ${Math.round(x)}`;
+    } else {
+      coordEl.textContent = `좌표: — , —`;
+    }
+  }
+  
+  // 맵 위에서 마우스 움직일 때 좌표 업데이트
+  map.on('mousemove', (e) => updateCursorPos(e.latlng));
+  
+  // 맵 밖으로 나가면 초기 상태로
+  map.on('mouseout', () => {
+    if (coordEl) coordEl.textContent = '좌표: — , —';
+  });
+
+  
   // 맵 초기화/fitBounds 이후 아무 곳에
   const uiPanel = document.querySelector('.ui-panel');
   if (uiPanel) {
