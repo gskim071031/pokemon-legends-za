@@ -17,24 +17,198 @@ function t(key, params = {}) {
 }
 
 
+// === 여러 맵 설정 ===
+const MAPS = {
+  main: { key:'main', label:'메인 맵',  img:'assets/main.png',  width:8192, height:8192, markers:'data/markers_main.json' },
+  sub1: { key:'sub1', label:'서브 맵 1', img:'assets/sub1.png', width:4096, height:4096, markers:'data/markers_sub1.json' },
+  sub2: { key:'sub2', label:'서브 맵 2', img:'assets/sub2.png', width:6144, height:6144, markers:'data/markers_sub2.json' },
+  sub3: { key:'sub3', label:'서브 맵 3', img:'assets/sub3.png', width:4096, height:4096, markers:'data/markers_sub3.json' }
+};
+let ACTIVE_MAP = MAPS.main;
+
+
+async function loadMap(mapKey) {
+  // 0) 활성 맵 갱신
+  ACTIVE_MAP = MAPS[mapKey] || MAPS.main;
+
+  // 1) 스위처 하이라이트
+  document.querySelectorAll('#map-switcher button').forEach(b => {
+    b.classList.toggle('active', b.dataset.mapKey === ACTIVE_MAP.key);
+  });
+
+  // 2) 기존 레이어/컨트롤/오버레이 정리
+  // 레이어 제거
+  layers.forEach(g => g.removeFrom(map));
+  layers.clear();
+  markers = [];
+
+  // 그룹 패널 제거
+  if (groupPanel) { map.removeControl(groupPanel); groupPanel = null; }
+
+  // 기존 오버레이/경계 제거
+  if (overlay) { map.removeLayer(overlay); overlay = null; }
+  if (rect)    { map.removeLayer(rect);    rect = null; }
+
+  // 3) 새 이미지 경계/오버레이
+  const imgWidth  = ACTIVE_MAP.width;
+  const imgHeight = ACTIVE_MAP.height;
+  const bounds = [[0,0],[imgHeight,imgWidth]];
+
+  overlay = L.imageOverlay(ACTIVE_MAP.img, bounds, { opacity: 1.0 }).addTo(map);
+  rect = L.rectangle(bounds, { className: 'bounds-rect' });
+  // 경계 토글 상태 반영
+  const toggle = document.getElementById('toggle-bounds');
+  if (toggle?.checked) rect.addTo(map);
+
+  map.fitBounds(bounds);
+
+  // 4) 좌표표시(범위 재설정)
+  map.off('mousemove'); // 중복 방지
+  map.on('mousemove', (e) => {
+    const coordEl = document.getElementById('cursor-pos');
+    if (!coordEl) return;
+    const y = Math.round(e.latlng.lat), x = Math.round(e.latlng.lng);
+    const inBounds = (y >= 0 && y <= imgHeight && x >= 0 && x <= imgWidth);
+    coordEl.textContent = inBounds
+      ? t('coord.label', { y, x })
+      : t('coord.label', { y: '—', x: '—' });
+  });
+
+  // 5) 마커/레이어 로드
+  const spots = await fetch(ACTIVE_MAP.markers).then(r => r.json());
+
+  // 카테고리 레이어 만들기
+  const categories = [...new Set(spots.map(s => s.type))];
+  categories.forEach(cat => layers.set(cat, L.layerGroup().addTo(map)));
+
+  // 마커 생성(핀/다각형/원 지원)
+  spots.forEach(s => {
+    const layerGroup = layers.get(s.type);
+    if (!layerGroup) return;
+
+    const popupHtml = makePopupHtml(s);
+    const style = shapeStyleOf(s);
+
+    if (s.shape === 'area') {
+      let shapeLayer = null, pinCenter = null;
+
+      if (s.area === 'circle' && Array.isArray(s.center) && typeof s.radius === 'number') {
+        shapeLayer = L.circle([s.center[0], s.center[1]], { ...style, radius: s.radius });
+        pinCenter  = L.latLng(s.center[0], s.center[1]);
+      } else if (Array.isArray(s.poly) && s.poly.length >= 3) {
+        const latlngs = s.poly.map(p => [p[0], p[1]]);
+        shapeLayer = L.polygon(latlngs, style);
+        pinCenter  = shapeLayer.getBounds().getCenter();
+      }
+
+      if (shapeLayer) {
+        shapeLayer.bindPopup(popupHtml).addTo(layerGroup);
+        const pin = L.marker([pinCenter.lat, pinCenter.lng], { icon: icon(s.emoji || '📍') })
+                     .bindPopup(popupHtml, { maxWidth: 420, minWidth: 280 })
+                     .addTo(layerGroup);
+        shapeLayer.on('click', () => pin.openPopup());
+        markers.push({ ...s, marker: pin, shapeLayer });
+        return;
+      }
+    }
+
+    // 기본: 핀
+    const pin = L.marker([s.pos[0], s.pos[1]], { icon: icon(s.emoji || '📍') })
+                 .bindPopup(popupHtml, { maxWidth: 420, minWidth: 280 })
+                 .addTo(layerGroup);
+    markers.push({ ...s, marker: pin, shapeLayer: null });
+  });
+
+  // 6) 태그 제안/검색 갱신
+  const allTags = new Set();
+  markers.forEach(m => (m.tags || []).forEach(t => allTags.add(t)));
+  TAGS = [...allTags].sort((a,b) => collator.compare(a,b)); // Intl.Collator 사용 중이라면
+  // 자동완성은 기존 renderSuggest()가 TAGS를 참조하도록 되어 있어야 함
+  // (이미 구현되어 있다면 TAGS만 교체하면 자동 반영)
+
+  // 7) 그룹 패널 다시 만들기(“기타”는 항상 뒤)
+  const catByGroup = new Map();
+  const OTHER_GROUP = t('group.other');
+  markers.forEach(m => {
+    const g = m.group || OTHER_GROUP;
+    if (!catByGroup.has(g)) catByGroup.set(g, new Set());
+    catByGroup.get(g).add(m.type);
+  });
+
+  const GroupPanel = L.Control.extend({
+    options: { position: 'bottomleft' },
+    onAdd: function () {
+      const div = L.DomUtil.create('div', 'legend-panel');
+      const groups = [...catByGroup.entries()];
+      groups.sort((a,b) => (a[0]===OTHER_GROUP)-(b[0]===OTHER_GROUP) || collator.compare(a[0], b[0]));
+      let html = `
+        <div class="panel-row panel-head">
+          <label class="chk"><input type="checkbox" data-role="master" checked>${t('master.all')}</label>
+        </div>`;
+      for (const [g, catsSet] of groups) {
+        const cats = [...catsSet].sort((x,y)=>collator.compare(x,y));
+        html += `
+          <div class="panel-group">
+            <div class="panel-row">
+              <label class="chk"><input type="checkbox" data-role="group" data-group="${g}" checked>${g}</label>
+            </div>
+            <ul>
+              ${cats.map(c => `
+                <li><label class="chk"><input type="checkbox" data-role="cat" data-group="${g}" data-cat="${c}" checked>${c}</label></li>
+              `).join('')}
+            </ul>
+          </div>`;
+      }
+      div.innerHTML = html;
+      L.DomEvent.disableScrollPropagation(div);
+      L.DomEvent.disableClickPropagation(div);
+      return div;
+    }
+  });
+  groupPanel = new GroupPanel().addTo(map);
+
+  // 패널 동작(전체/그룹/카테고리) 바인딩 — 기존 apply 바인딩 로직 재사용
+  bindCategoryPanelHandlers();
+
+  // 8) 경계 토글 리스너(중복 방지 위해 기존 off 후 on)
+  document.getElementById('toggle-bounds')?.addEventListener('change', () => {
+    if (!rect) return;
+    const toggle = document.getElementById('toggle-bounds');
+    if (toggle.checked) rect.addTo(map); else rect.removeFrom(map);
+  });
+}
+
+
 // Leaflet (CRS.Simple) interactive map for a custom game image
 (async function () {
   
   await loadI18n(); // ← 번역 로드 후 아래 로직 실행
+
+  renderSwitcher();
+  await loadMap('main');  // 메인 맵으로 시작
   
   const imgWidth = 6144;   // TODO: 원본 맵 이미지의 폭(px)
   const imgHeight = 6144;  // TODO: 원본 맵 이미지의 높이(px)
   const mapImage = 'assets/map.png'; // TODO: 여기에 맵 이미지 파일을 넣으세요.
 
-  // 맵 생성
+  // === 맵 한 번 생성 ===
   const map = L.map('map', {
     crs: L.CRS.Simple,
     minZoom: -3,
     maxZoom: 4,
     zoomSnap: 0.25,
     wheelPxPerZoomLevel: 120,
-    zoomControl: false         // 기본 줌 컨트롤 끄기 (나중에 수동 추가)
+    zoomControl: false,
+    attributionControl: false
   });
+  L.control.zoom({ position: 'bottomright' }).addTo(map);
+  
+  let overlay = null;        // 이미지 오버레이
+  let rect = null;           // 경계 가이드
+  let layers = new Map();    // 카테고리별 레이어 그룹
+  let markers = [];          // { ...s, marker, shapeLayer }
+  let groupPanel = null;     // 왼쪽 아래 패널 컨트롤
+  let TAGS = [];             // 태그 제안용
 
   // 이미지 경계: [ [top, left], [bottom, right] ] = [ [0,0], [imgHeight, imgWidth] ]
   const bounds = [[0, 0], [imgHeight, imgWidth]];
@@ -52,12 +226,30 @@ function t(key, params = {}) {
   document.getElementById('search-tags').placeholder = t('search.tags.placeholder');
   document.getElementById('tag-suggest').setAttribute('aria-label', t('tags.suggest.aria'));
   document.getElementById('i-boundary-label').textContent = t('boundary.toggle');
+
+  // 스위처 버튼 생성
+  const switcher = document.getElementById('map-switcher');
+  function renderSwitcher() {
+    if (!switcher) return;
+    switcher.innerHTML = '';
+    Object.values(MAPS).forEach(m => {
+      const btn = document.createElement('button');
+      btn.textContent = m.label;
+      btn.dataset.mapKey = m.key;
+      if (m.key === ACTIVE_MAP.key) btn.classList.add('active');
+      btn.addEventListener('click', () => loadMap(m.key));
+      switcher.appendChild(btn);
+    });
+    // 스위처 위에서 스크롤/클릭이 맵으로 안 새가게
+    L.DomEvent.disableScrollPropagation(switcher);
+    L.DomEvent.disableClickPropagation(switcher);
+  }
+
   
   // 좌표 초기 문구
   const coordEl = document.getElementById('cursor-pos');
   coordEl.textContent = t('coord.label', { y: '—', x: '—' });
 
-  
   // 커서 좌표 표시 (이미지 픽셀 기준: [y, x])  
   function updateCursorPos(latlng) {
     if (!coordEl) return;
