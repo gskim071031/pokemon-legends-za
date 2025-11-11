@@ -582,7 +582,7 @@
   });
   
   // 초기 indeterminate 정돈
-  for (const [g] of catByGroup) updateGroupState(g);
+  for (const [g] of groups) updateGroupState(g);
   updateMasterState();
 
   // 패널(범례+선택창) 안에서 휠/클릭 이벤트가 맵으로 전달되지 않게
