@@ -30,10 +30,10 @@ function t(key, params = {}) {
 
 // === 여러 맵 설정 ===
 const MAPS = {
-  main: { key:'main', label:'메인 맵',  img:'assets/main.png',  width:8192, height:8192, markers:'data/markers_main.json' },
-  sub1: { key:'sub1', label:'서브 맵 1', img:'assets/sub1.png', width:4096, height:4096, markers:'data/markers_sub1.json' },
-  sub2: { key:'sub2', label:'서브 맵 2', img:'assets/sub2.png', width:6144, height:6144, markers:'data/markers_sub2.json' },
-  sub3: { key:'sub3', label:'서브 맵 3', img:'assets/sub3.png', width:4096, height:4096, markers:'data/markers_sub3.json' }
+  main: { key:'main', label:'메인 맵',  img:'assets/main.png',  width:8192, height:2304, markers:'data/markers_main.json' },
+  sub1: { key:'sub1', label:'서브 맵 1', img:'assets/sub1.png', width:2304, height:2304, markers:'data/markers_sub1.json' },
+  sub2: { key:'sub2', label:'서브 맵 2', img:'assets/sub2.png', width:2304, height:2304, markers:'data/markers_sub2.json' },
+  sub3: { key:'sub3', label:'서브 맵 3', img:'assets/sub3.png', width:2304, height:2304, markers:'data/markers_sub3.json' }
 };
 let ACTIVE_MAP = MAPS.main;
 
