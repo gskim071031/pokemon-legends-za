@@ -188,9 +188,12 @@ function renderSuggest(showAll = false) {
     suggestIdx=-1; 
     return; 
   }
-  suggestEl.innerHTML = items.map((t,i)=>`<li role="option" data-value="${t}" ${i===0?'aria-selected="true"':''}>${t}</li>`).join('');
+  const withSelected = !(showAll || !q);
+  suggestEl.innerHTML = items.map((t,i)=>
+    `<li role="option" data-value="${t}" ${withSelected && i===0 ? 'aria-selected="true"' : ''}>${t}</li>`
+  ).join('');
   suggestEl.style.display = 'block';
-  suggestIdx = showAll ? -1 : 0;
+  suggestIdx = withSelected ? 0 : -1;
 }
 function updateHighlight(nextIdx) {
   const li = [...suggestEl.querySelectorAll('li')];
