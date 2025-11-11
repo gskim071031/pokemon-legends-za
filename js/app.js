@@ -157,7 +157,7 @@
   const gridPaneName = 'grid-pane';
   if (!map.getPane(gridPaneName)) {
     map.createPane(gridPaneName);
-    map.getPane(gridPaneName).style.zIndex = 350; // overlayPane(400)보다 살짝 낮게 두어도 OK
+    map.getPane(gridPaneName).style.zIndex = 500; // ← overlay(400) 위, marker(600) 아래로!
   }
   
   /** 격자 그리기: 전체 이미지 bounds 기준으로 고정 생성 */
@@ -167,7 +167,6 @@
     const w = imgWidth, h = imgHeight;
   
     // 세로선 + 가로선 (얇은 선이 필요한 경우 주석 해제)
-    /*
     for (let x = 0; x <= w; x += GRID_STEP) {
       L.polyline([[0,x],[h,x]], { pane: gridPaneName, color:'#7aa2ff', weight:1, opacity:0.12 })
         .addTo(gridLayer);
@@ -176,7 +175,6 @@
       L.polyline([[y,0],[y,w]], { pane: gridPaneName, color:'#7aa2ff', weight:1, opacity:0.12 })
         .addTo(gridLayer);
     }
-    */
   
     // 격자점: 툴팁으로 좌표 표시 (마우스 올리면 보임)
     for (let y = 0; y <= h; y += GRID_STEP) {
@@ -203,8 +201,13 @@
   // 체크박스와 연동
   const gridToggle = document.getElementById('toggle-grid');
   function applyGridToggle() {
-    if (gridToggle?.checked) gridLayer.addTo(map);
-    else gridLayer.removeFrom(map);
+    if (gridToggle?.checked) { 
+      gridLayer.addTo(map);
+      gridLayer.bringToFront(); // ← 이미지 오버레이 위로 확실히
+    } 
+    else {
+      gridLayer.removeFrom(map);
+    }
   }
   gridToggle?.addEventListener('change', applyGridToggle);
   
