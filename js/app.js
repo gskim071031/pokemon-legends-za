@@ -464,10 +464,13 @@
   
       // 그룹별 섹션 (기타 그룹은 맨 뒤로)
       const groups = [...catByGroup.entries()];
-      // "기타"라는 그룹명을 마지막으로 보내기
-      groups.sort((a, b) => (a[0] === '기타') - (b[0] === '기타'));
-      
-      for (const [g, catsSet] of catByGroup) {
+      // "기타"는 항상 마지막, 나머지는 한글 정렬
+      groups.sort((a, b) =>
+        (a[0] === '기타') - (b[0] === '기타') ||
+        a[0].localeCompare(b[0], 'ko')
+      );
+    
+      for (const [g, catsSet] of groups) {
         const cats = [...catsSet].sort();
         html += `
           <div class="panel-group">
