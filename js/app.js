@@ -68,6 +68,18 @@
         : ``}
     </div>`;
 
+  function shapeStyleOf(s) {
+    const stroke = s.stroke || s.color || '#7aa2ff';
+    return {
+      className: 'area-shape',
+      color: stroke,
+      opacity: 0.9,
+      weight: s.weight ?? 2,
+      fillColor: s.fill || stroke,
+      fillOpacity: (typeof s.fillOpacity === 'number') ? s.fillOpacity : 0.18
+    };
+  }
+
   // 데이터 로드
   const spots = await fetch('data/markers.json').then(r => r.json());
 
@@ -85,32 +97,50 @@
     if (!layerGroup) return;
   
     const popupHtml = makePopupHtml(s);
+    const style = shapeStyleOf(s);
   
-    if (s.shape === 'area' && Array.isArray(s.poly) && s.poly.length >= 3) {
-      // 1) 다각형 생성
-      const polyLatLngs = s.poly.map(p => [p[0], p[1]]); // [y,x] 그대로
-      const poly = L.polygon(polyLatLngs, { className: 'area-shape' });
-      poly.bindPopup(popupHtml);
-      layerGroup.addLayer(poly);
+    // 범위 마커
+    if (s.shape === 'area') {
+      let shapeLayer = null;
+      let pinCenter = null;
   
-      // 2) 중심점에 이모지 핀(팝업 공유)
-      const center = poly.getBounds().getCenter(); // 무게중심 근사
-      const pin = L.marker([center.lat, center.lng], { icon: icon(s.emoji || '📍') })
+      if (s.area === 'circle' && Array.isArray(s.center) && typeof s.radius === 'number') {
+        // 원 (CRS.Simple이므로 radius는 px 단위)
+        shapeLayer = L.circle([s.center[0], s.center[1]], { ...style, radius: s.radius });
+        pinCenter = L.latLng(s.center[0], s.center[1]);
+      } else if (Array.isArray(s.poly) && s.poly.length >= 3) {
+        // 다각형
+        const latlngs = s.poly.map(p => [p[0], p[1]]);
+        shapeLayer = L.polygon(latlngs, style);
+        pinCenter = shapeLayer.getBounds().getCenter();
+      } else {
+        // 정의가 불완전하면 포인트로 폴백
+        const pin = L.marker([s.pos?.[0] ?? 0, s.pos?.[1] ?? 0], { icon: icon(s.emoji || '📍') })
+                     .bindPopup(popupHtml, { maxWidth: 420, minWidth: 280 });
+        layerGroup.addLayer(pin);
+        markers.push({ ...s, marker: pin, shapeLayer: null });
+        return;
+      }
+  
+      // 레이어/핀 추가
+      shapeLayer.bindPopup(popupHtml);
+      layerGroup.addLayer(shapeLayer);
+  
+      const pin = L.marker([pinCenter.lat, pinCenter.lng], { icon: icon(s.emoji || '📍') })
                    .bindPopup(popupHtml, { maxWidth: 420, minWidth: 280 });
       layerGroup.addLayer(pin);
   
-      // 3) 클릭 시 핀 팝업 열기(다각형 클릭해도 같은 팝업)
-      poly.on('click', () => pin.openPopup());
+      // 다각형/원 클릭 시 핀 팝업 열기
+      shapeLayer.on('click', () => pin.openPopup());
   
-      // 검색/토글을 위해 둘 다 저장
-      markers.push({ ...s, marker: pin, poly });
+      markers.push({ ...s, marker: pin, shapeLayer });
   
     } else {
-      // 디폴트: 포인트 마커
+      // 핀(점) 마커
       const pin = L.marker([s.pos[0], s.pos[1]], { icon: icon(s.emoji || '📍') })
                    .bindPopup(popupHtml, { maxWidth: 420, minWidth: 280 });
       layerGroup.addLayer(pin);
-      markers.push({ ...s, marker: pin, poly: null });
+      markers.push({ ...s, marker: pin, shapeLayer: null });
     }
   });
   
@@ -303,44 +333,44 @@
   // -------------------------------
   // applySearch() 교체: 이름/노트 + 논리 태그식
   // -------------------------------
-  function applySearch() {
-  const qName = (document.getElementById('search-name')?.value || '').trim().toLowerCase();
-  const qNote = (document.getElementById('search-note')?.value || '').trim().toLowerCase();
-  const qTags = (document.getElementById('search-tags')?.value || '').trim();
-
-  const hasName = !!qName, hasNote = !!qNote, hasTags = !!qTags;
-
-  let ast = null;
-  if (hasTags) {
-    try {
-      const tokens = tokenize(qTags);
-      [ast] = parseExpr(tokens);
-    } catch (_) { ast = null; }
-  }
-
-  const dim = 0.15; // 감쇠
-  if (!hasName && !hasNote && !hasTags) {
-    markers.forEach(m => {
-      m.marker.setOpacity(1);
-      if (m.poly) m.poly.setStyle({ fillOpacity:.18, opacity:.9 });
-    });
-    return;
-  }
-
-  markers.forEach(m => {
-    const nameOk = !hasName || (m.name || '').toLowerCase().includes(qName);
-    const noteOk = !hasNote || (m.note || '').toLowerCase().includes(qNote);
-    const tagOk  = !hasTags || evalAst(ast, new Set(m.tags || []));
-    const show = nameOk && noteOk && tagOk;
-
-    m.marker.setOpacity(show ? 1 : dim);
-    if (m.poly) {
-      m.poly.setStyle(show
-        ? { fillOpacity:.18, opacity:.9 }
-        : { fillOpacity:.06, opacity:.3 });
+  const DIM = 0.15;
+  function dimShape(layer, show, s) {
+    if (!layer) return;
+    const base = shapeStyleOf(s);
+    if (show) {
+      layer.setStyle({ color: base.color, fillColor: base.fillColor, opacity: 0.9, fillOpacity: base.fillOpacity, weight: base.weight });
+    } else {
+      layer.setStyle({ color: base.color, fillColor: base.fillColor, opacity: 0.3, fillOpacity: Math.max(0.04, (base.fillOpacity||0.18) * 0.35), weight: base.weight });
     }
-  });
-}
+  }
+  
+  function applySearch() {
+    const qName = (document.getElementById('search-name')?.value || '').trim().toLowerCase();
+    const qNote = (document.getElementById('search-note')?.value || '').trim().toLowerCase();
+    const qTags = (document.getElementById('search-tags')?.value || '').trim();
+  
+    const hasName = !!qName, hasNote = !!qNote, hasTags = !!qTags;
+  
+    let ast = null;
+    if (hasTags) {
+      try { const tokens = tokenize(qTags); [ast] = parseExpr(tokens); } catch (_) { ast = null; }
+    }
+  
+    if (!hasName && !hasNote && !hasTags) {
+      markers.forEach(m => { m.marker.setOpacity(1); dimShape(m.shapeLayer, true, m); });
+      return;
+    }
+  
+    markers.forEach(m => {
+      const nameOk = !hasName || (m.name || '').toLowerCase().includes(qName);
+      const noteOk = !hasNote || (m.note || '').toLowerCase().includes(qNote);
+      const tagOk  = !hasTags || evalAst(ast, new Set(m.tags || []));
+      const show = nameOk && noteOk && tagOk;
+  
+      m.marker.setOpacity(show ? 1 : DIM);
+      dimShape(m.shapeLayer, show, m);
+    });
+  }
   
   // 이름/노트 Enter 검색 (기존처럼)
   document.getElementById('search-name')?.addEventListener('keydown', e => {
