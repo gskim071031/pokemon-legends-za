@@ -289,3 +289,36 @@ html, body {
   fill: none;
 }
 
+
+/* 맵 전환 스위처: 오른쪽 중앙 */
+.map-switcher {
+  position: fixed;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+  z-index: 1100;
+  user-select: none;
+}
+.map-switcher button {
+  background: rgba(10,12,18,.9);
+  border: 1px solid #1f2635;
+  border-radius: .6rem;
+  padding: .45rem .6rem;
+  min-width: 120px;
+  color: var(--fg);
+  font-size: .9rem;
+  cursor: pointer;
+}
+.map-switcher button:hover { filter: brightness(1.1); }
+.map-switcher button.active {
+  outline: 2px solid #7aa2ff;
+  outline-offset: 1px;
+}
+@media (max-width: 768px) {
+  .map-switcher { top: auto; bottom: 16px; transform: none; }
+  .map-switcher button { min-width: 96px; padding: .4rem .5rem; }
+}
+
