@@ -56,6 +56,18 @@
     iconAnchor: [12, 12]
   });
 
+  // 팝업 HTML 생성 함수 추가
+  const makePopupHtml = (s) => `
+    <div class="gm-popup">
+      <div class="gm-popup-title">${s.name}</div>
+      ${s.note ? `<div class="gm-popup-note">${s.note}</div>` : ``}
+      ${(s.tags && s.tags.length)
+        ? `<div class="gm-popup-tags">
+             ${s.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+           </div>`
+        : ``}
+    </div>`;
+
   // 데이터 로드
   const spots = await fetch('data/markers.json').then(r => r.json());
 
