@@ -1,13 +1,5 @@
 [
-  { "name": "보스 방",
-    "pos": [4200, 3100],
-    "type": "boss",
-    "note": "주간 리젠",
-    "tags": ["weekly", "danger"],
-    "emoji": "👹", 
-    "shape":"point" },
-  
-  { "name": "상자",
+   { "name": "상자",
     "pos": [2000, 7000],
     "type": "loot",
     "note": "에픽 확률↑",
@@ -24,14 +16,34 @@
     "emoji":"👹", 
     "shape":"point" },
 
-  { "name":"금고 구역", 
-    "poly":[ [1800,6900],[2500,7100],[2550,7600],[1900,7500] ],
-    "type":"loot", 
-    "group":"아이템", 
-    "note":"경비 주의", 
-    "tags":["chest","epic"],
-    "emoji":"🧰", 
-    "shape":"area" },
+  { "name": "금고 구역(다각형)",
+    "shape": "area",
+    "area": "polygon",
+    "poly": [[1800,6900],[2500,7100],[2550,7600],[1900,7500]],
+    "type": "loot",
+    "group": "아이템",
+    "note": "경비 주의",
+    "tags": ["chest","epic"],
+    "emoji": "🧰",
+    "stroke": "#3fb950",      // 테두리
+    "fill": "#3fb950",        // 내부색
+    "fillOpacity": 0.2,       // 내부 투명도(0~1)
+    "weight": 2 },            // 선 두께
+
+  { "name": "보안 구역(원)",
+    "shape": "area",
+    "area": "circle",
+    "center": [3000, 5200],   // [y, x]
+    "radius": 350,            // px(=이미지 좌표 단위)
+    "type": "npc",
+    "group": "NPC",
+    "note": "경비 순찰 범위",
+    "tags": ["guard","alert"],
+    "emoji": "🚨",
+    "stroke": "#e11d48",
+    "fill": "#e11d48",
+    "fillOpacity": 0.15,
+    "weight": 3 },
   
   { "name": "상인",
     "pos": [1000, 1200],
