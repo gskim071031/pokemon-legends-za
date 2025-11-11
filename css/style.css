@@ -43,6 +43,18 @@ html, body {
 }
 .leaflet-container { background: var(--bg) !important; }
 
+/* 좌표 표시 줄 */
+.coord-row {
+  margin-top: .5rem;
+  padding: .35rem .55rem;
+  border: 1px solid #222a39;
+  border-radius: .6rem;
+  background: var(--panel);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: .9rem;
+  color: var(--fg);
+}
+
 /* -------------------------------
    떠 있는 UI 패널 (왼쪽 위)
    ------------------------------- */
