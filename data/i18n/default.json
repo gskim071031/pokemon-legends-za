@@ -1,11 +1,11 @@
 {
   "__locale": "ko-KR",
   
-  "app.title": "Game Map",
+  "app.title": "Pokémon LEGENDS Z-A",
   
-  "search.name.placeholder": "이름 검색 (Enter)",
-  "search.note.placeholder": "노트 검색 (Enter)",
-  "search.tags.placeholder": "태그 입력 (AND/OR/NOT,( ))",
+  "search.name.placeholder": "이름 검색",
+  "search.note.placeholder": "노트 검색",
+  "search.tags.placeholder": "태그 검색",
   "tags.suggest.aria": "태그 제안",
   
   "boundary.toggle": "경계 보기",
@@ -15,10 +15,10 @@
   
   "categories.title": "카테고리",
   "master.all": "전체",
-  "group.other": "기타",
+  "group.other": "Etc",
 
   "maps.main": "메인 맵",
-  "maps.sub1": "서브 맵 1",
-  "maps.sub2": "서브 맵 2",
-  "maps.sub3": "서브 맵 3"
+  "maps.sub1": "카페",
+  "maps.sub2": "하수구 1",
+  "maps.sub3": "하수구 2"
 }
