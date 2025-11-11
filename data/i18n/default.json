@@ -6,16 +6,16 @@
   "search.name.placeholder": "이름 검색",
   "search.note.placeholder": "노트 검색",
   "search.tags.placeholder": "태그 검색",
-  "tags.suggest.aria": "태그 제안",
+  "qtags.suggest.aria": "태그 제안",
   
   "boundary.toggle": "경계 보기",
   "coord.label": "좌표: {y}, {x}",
   
   "zoom.label": "×{scale}",
   
-  "categories.title": "카테고리",
+  "qcategories.title": "카테고리",
   "master.all": "전체",
-  "group.other": "Etc",
+  "group.other": "ETC",
 
   "maps.main": "미르 시티",
   "maps.sub1": "카페",
