@@ -150,7 +150,7 @@
   // ===============================
   // 그리드 오버레이 (패널 아래 · 맵 위) + 좌표 툴팁
   // ===============================
-  const GRID_STEP = 400; // 격자 간격(px, 이미지 좌표 기준) — 필요시 조절
+  const GRID_STEP = 16; // 격자 간격(px, 이미지 좌표 기준) — 필요시 조절
   const gridLayer = L.layerGroup();
   
   // 전용 pane을 만들어 zIndex를 마커보다 낮게(패널은 fixed z-index라 자동 상단)
@@ -168,11 +168,11 @@
   
     // 세로선 + 가로선 (얇은 선이 필요한 경우 주석 해제)
     for (let x = 0; x <= w; x += GRID_STEP) {
-      L.polyline([[0,x],[h,x]], { pane: gridPaneName, color:'#7aa2ff', weight:1, opacity:0.12 })
+      L.polyline([[0,x],[h,x]], { pane: gridPaneName, color:'#7aa2ff', weight:1, opacity:0.5 })
         .addTo(gridLayer);
     }
     for (let y = 0; y <= h; y += GRID_STEP) {
-      L.polyline([[y,0],[y,w]], { pane: gridPaneName, color:'#7aa2ff', weight:1, opacity:0.12 })
+      L.polyline([[y,0],[y,w]], { pane: gridPaneName, color:'#7aa2ff', weight:1, opacity:0.5 })
         .addTo(gridLayer);
     }
   
@@ -181,7 +181,7 @@
       for (let x = 0; x <= w; x += GRID_STEP) {
         const dot = L.circleMarker([y, x], {
           pane: gridPaneName,
-          radius: 2,
+          radius: 5,
           stroke: false,
           fill: true,
           fillColor: '#ffffff',
