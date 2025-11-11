@@ -1,5 +1,27 @@
+// ===== I18N =====
+const LANG = 'ko'; // 기본 언어 (스위처를 만들면 동적으로 바꾸면 됨)
+let I18N = {};
+
+async function loadI18n(lang = LANG) {
+  try {
+    const res = await fetch(`data/i18n/${lang}.json`);
+    I18N = await res.json();
+  } catch {
+    I18N = {};
+  }
+}
+
+function t(key, params = {}) {
+  const raw = I18N[key] ?? key;
+  return raw.replace(/\{(\w+)\}/g, (_, k) => (params[k] ?? `{${k}}`));
+}
+
+
 // Leaflet (CRS.Simple) interactive map for a custom game image
 (async function () {
+  
+  await loadI18n(); // ← 번역 로드 후 아래 로직 실행
+  
   const imgWidth = 6144;   // TODO: 원본 맵 이미지의 폭(px)
   const imgHeight = 6144;  // TODO: 원본 맵 이미지의 높이(px)
   const mapImage = 'assets/map.png'; // TODO: 여기에 맵 이미지 파일을 넣으세요.
@@ -23,6 +45,19 @@
   map.fitBounds(bounds);
 
   
+  // 제목/플레이스홀더/라벨 주입
+  document.getElementById('i-title').textContent = t('app.title');
+  document.getElementById('search-name').placeholder = t('search.name.placeholder');
+  document.getElementById('search-note').placeholder = t('search.note.placeholder');
+  document.getElementById('search-tags').placeholder = t('search.tags.placeholder');
+  document.getElementById('tag-suggest').setAttribute('aria-label', t('tags.suggest.aria'));
+  document.getElementById('i-boundary-label').textContent = t('boundary.toggle');
+  
+  // 좌표 초기 문구
+  const coordEl = document.getElementById('cursor-pos');
+  coordEl.textContent = t('coord.label', { y: '—', x: '—' });
+
+  
   // 커서 좌표 표시 (이미지 픽셀 기준: [y, x])
   const coordEl = document.getElementById('cursor-pos');
   
@@ -31,11 +66,8 @@
     const y = latlng.lat; // CRS.Simple: lat=y, lng=x
     const x = latlng.lng;
     const inBounds = (y >= 0 && y <= imgHeight && x >= 0 && x <= imgWidth);
-    if (inBounds) {
-      coordEl.textContent = `좌표: ${Math.round(y)}, ${Math.round(x)}`;
-    } else {
-      coordEl.textContent = `좌표: — , —`;
-    }
+    // coordEl.textContent = inBounds ? t('coord.label', { y, x }) : t('coord.label', { y: '—', x: '—' });
+    coordEl.textContent = t('coord.label', { y, x });
   }
   
   // 맵 위에서 마우스 움직일 때 좌표 업데이트
@@ -428,20 +460,20 @@
   
   // 줌이 바뀔 때마다 갱신
   map.on('zoomend', () => {
-  const zoom = map.getZoom();
-  const scale = Math.pow(2, zoom);  // 로그 스케일 → 실제 배율
-  document.querySelector('.zoom-display').innerHTML =
-    `×${scale.toFixed(2)}`;
+    const zoom = map.getZoom();
+    const scale = Math.pow(2, zoom);  // 로그 스케일 → 실제 배율
+    document.querySelector('.zoom-display').textContent = t('zoom.label', { scale: scale.toFixed(2) });
   });
 
   // ===============================
   // 그룹(큰 분류) + 카테고리(소분류) + 전체 토글 패널
   // ===============================
+  const OTHER_GROUP = t('group.other');
   
   // 1) 그룹/카테고리 수집
   const catByGroup = new Map(); // group -> Set(categories)
   markers.forEach(m => {
-    const g = m.group || '기타';
+    const g = m.group || OTHER_GROUP;
     if (!catByGroup.has(g)) catByGroup.set(g, new Set());
     catByGroup.get(g).add(m.type);
   });
@@ -457,19 +489,21 @@
         <div class="panel-row panel-head">
           <label class="chk">
             <input type="checkbox" data-role="master" checked>
-            전체
+            ${t('master.all')}
           </label>
         </div>
       `;
   
-      // 그룹별 섹션 (기타 그룹은 맨 뒤로)
+      // 그룹 목록 정렬 시 "기타"를 항상 뒤로
       const groups = [...catByGroup.entries()];
-      // "기타"는 항상 마지막, 나머지는 한글 정렬
       groups.sort((a, b) =>
-        (a[0] === '기타') - (b[0] === '기타') ||
-        a[0].localeCompare(b[0], 'ko')
+        (a[0] === OTHER_GROUP) - (b[0] === OTHER_GROUP) ||
+        a[0].localeCompare(b[0], 'ko') // 필요시 LANG 반영
       );
-    
+
+      // 섹션 타이틀(선택): 상단에 카테고리 제목 넣고 싶다면
+      html = `<div class="panel-row panel-head"><strong>${t('categories.title')}</strong></div>` + html;
+      
       for (const [g, catsSet] of groups) {
         const cats = [...catsSet].sort();
         html += `
