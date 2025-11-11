@@ -228,16 +228,12 @@ html, body {
 /* -------------------------------
    Zoom Level Display
    ------------------------------- */
-.zoom-display {
-  background: rgba(10, 12, 18, 0.85);
-  border: 1px solid #1f2635;
-  border-radius: 0.6rem;
-  padding: 0.25rem 0.6rem;
-  color: var(--muted);
-  font-size: 0.8rem;
-  margin-bottom: 38px; /* 줌 버튼 위쪽 간격 */
-  text-align: right;
+.zoom-display{
+  position:fixed; right:12px; bottom:12px;
+  padding:.25rem .5rem; border:1px solid #1f2635; border-radius:.5rem;
+  background:rgba(10,12,18,.9); color:var(--fg); font-size:.9rem; z-index:1100;
 }
+@media (max-width:768px){ .zoom-display{ right:10px; bottom:10px; } }
 
 /* -------------------------------
    통합 패널: 범례 레이아웃 + 선택 기능
