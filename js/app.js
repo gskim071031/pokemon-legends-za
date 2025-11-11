@@ -1,5 +1,5 @@
 // ===== I18N =====
-const LANG = 'ko'; // 기본 언어 (스위처를 만들면 동적으로 바꾸면 됨)
+const LANG = 'default'; // 기본 언어 (스위처를 만들면 동적으로 바꾸면 됨)
 let I18N = {};
 
 async function loadI18n(lang = LANG) {
