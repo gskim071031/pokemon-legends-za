@@ -333,8 +333,8 @@ function renderSwitcher() {
   el.innerHTML = '';
   Object.values(MAPS).forEach(m => {
     const btn = document.createElement('button');
-    btn.textContent = m.label;
-    btn.dataset.mapKey = t(m.labelKey);
+    btn.textContent = t(m.labelKey);
+    btn.dataset.mapKey = m.key;
     if (m.key === ACTIVE_MAP.key) btn.classList.add('active');
     btn.addEventListener('click', () => loadMap(m.key));
     el.appendChild(btn);
