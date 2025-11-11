@@ -83,11 +83,6 @@
     layers.get(s.type)?.addLayer(marker);
     return { ...s, marker };
   });
-
-  // 검색
-  // ------- (A) 태그 목록 수집 후 <select multiple> 채우기 -------
-  const allTags = new Set();
-  markers.forEach(m => (m.tags || []).forEach(t => allTags.add(t)));
   
   // ===============================
   // 태그 자동완성 + 고급 논리 검색(AND/OR/NOT,( ))
