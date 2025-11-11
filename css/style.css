@@ -101,15 +101,41 @@ html, body {
   width: 100%;
 }
 
-/* 태그 다중 선택 */
+/* 태그 검색 입력 */
+.tag-search { position: relative; }
 #search-tags {
   background: var(--panel);
   border: 1px solid #222a39;
   border-radius: .6rem;
-  padding: .35rem .4rem;
+  padding: .45rem .6rem;
   color: var(--fg);
   outline: none;
   width: 100%;
+}
+
+/* 자동완성 리스트 */
+.tag-suggest {
+  position: absolute;
+  left: 0; right: 0;
+  top: calc(100% + 6px);
+  margin: 0; padding: .3rem 0;
+  list-style: none;
+  background: rgba(10,12,18,.95);
+  border: 1px solid #1f2635;
+  border-radius: .6rem;
+  max-height: 36vh;
+  overflow: auto;
+  display: none;           /* 기본 숨김 */
+  z-index: 1100;
+}
+.tag-suggest li {
+  padding: .35rem .6rem;
+  cursor: pointer;
+  color: var(--fg);
+}
+.tag-suggest li[aria-selected="true"],
+.tag-suggest li:hover {
+  background: #1c2436;
 }
 
 /* 패널 폭은 기존 설정 유지(필요시 조절) */
