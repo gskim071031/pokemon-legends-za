@@ -48,12 +48,15 @@
   // 레이어 그룹(카테고리별)
   const layers = new Map();
 
-  // 마커 아이콘(간단 버전)
+  // 이모지 핀 아이콘(정중앙 정렬)
+  const EMOJI_BOX = 24;   // 아이콘 박스 크기(px) → CSS와 일치해야 함
+  const EMOJI_FONT = 20;  // 이모지 폰트 크기(px)
+  
   const icon = (emoji) => L.divIcon({
     className: 'emoji-pin',
-    html: `<div style="font-size:20px;filter: drop-shadow(0 1px 2px rgba(0,0,0,.6))">${emoji}</div>`,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12]
+    html: `<div class="emoji-box" style="font-size:${EMOJI_FONT}px">${emoji}</div>`,
+    iconSize: [EMOJI_BOX, EMOJI_BOX],
+    iconAnchor: [Math.round(EMOJI_BOX/2), Math.round(EMOJI_BOX/2)] // 중심 기준
   });
 
   // 팝업 HTML 생성 함수 추가
