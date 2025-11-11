@@ -1,3 +1,14 @@
+// 전역 참조(여길 loadMap이 봅니다)
+let map;              // L.Map
+let overlay = null;   // 이미지 오버레이
+let rect = null;      // 경계선
+let layers = new Map();    // 카테고리 → LayerGroup
+let markers = [];          // [{...s, marker, shapeLayer}]
+let groupPanel = null;     // 왼쪽 아래 패널 컨트롤
+let TAGS = [];             // 태그 제안
+let collator;              // Intl.Collator (정렬)
+
+
 // ===== I18N =====
 const LANG = 'default'; // 기본 언어 (스위처를 만들면 동적으로 바꾸면 됨)
 let I18N = {};
@@ -182,17 +193,23 @@ async function loadMap(mapKey) {
 // Leaflet (CRS.Simple) interactive map for a custom game image
 (async function () {
   
-  await loadI18n(); // ← 번역 로드 후 아래 로직 실행
+  // 1) i18n 로드
+  await loadI18n();
 
-  renderSwitcher();
-  await loadMap('main');  // 메인 맵으로 시작
-  
-  const imgWidth = 6144;   // TODO: 원본 맵 이미지의 폭(px)
-  const imgHeight = 6144;  // TODO: 원본 맵 이미지의 높이(px)
-  const mapImage = 'assets/map.png'; // TODO: 여기에 맵 이미지 파일을 넣으세요.
+  // 2) UI 텍스트 주입
+  document.getElementById('i-title').textContent = t('app.title');
+  document.getElementById('search-name').placeholder = t('search.name.placeholder');
+  document.getElementById('search-note').placeholder = t('search.note.placeholder');
+  document.getElementById('search-tags').placeholder = t('search.tags.placeholder');
+  document.getElementById('tag-suggest').setAttribute('aria-label', t('tags.suggest.aria'));
+  document.getElementById('i-boundary-label').textContent = t('boundary.toggle');
 
-  // === 맵 한 번 생성 ===
-  const map = L.map('map', {
+  // 3) 로케일 정렬기 준비(다국어 정렬)
+  const LOCALE = I18N.__locale || 'ko';
+  collator = new Intl.Collator([LOCALE, 'en'], { usage:'sort', sensitivity:'base', numeric:true, ignorePunctuation:true });
+
+  // 4) 맵 생성(전역 map에 할당)
+  map = L.map('map', {
     crs: L.CRS.Simple,
     minZoom: -3,
     maxZoom: 4,
@@ -202,21 +219,11 @@ async function loadMap(mapKey) {
     attributionControl: false
   });
   L.control.zoom({ position: 'bottomright' }).addTo(map);
-  
-  let overlay = null;        // 이미지 오버레이
-  let rect = null;           // 경계 가이드
-  let layers = new Map();    // 카테고리별 레이어 그룹
-  let markers = [];          // { ...s, marker, shapeLayer }
-  let groupPanel = null;     // 왼쪽 아래 패널 컨트롤
-  let TAGS = [];             // 태그 제안용
 
-  // 이미지 경계: [ [top, left], [bottom, right] ] = [ [0,0], [imgHeight, imgWidth] ]
-  const bounds = [[0, 0], [imgHeight, imgWidth]];
-
-  // 이미지 오버레이
-  const overlay = L.imageOverlay(mapImage, bounds, { opacity: 1.0 });
-  overlay.addTo(map);
-  map.fitBounds(bounds);
+  // 5) 스위처 버튼 구성 후
+  renderSwitcher();
+  // 6) 첫 맵 로드 (여기서는 map이 준비되어 있음)
+  await loadMap('main');
 
   
   // 제목/플레이스홀더/라벨 주입
@@ -279,9 +286,6 @@ async function loadMap(mapKey) {
   const headerEl = document.querySelector('.header');
   const headerH = headerEl ? Math.round(headerEl.getBoundingClientRect().height) : 92;
   document.documentElement.style.setProperty('--header-h', `${headerH}px`);
-
-  // 기본 줌 버튼을 bottomright로 추가
-  L.control.zoom({ position: 'bottomright' }).addTo(map);
 
   // 경계(디버그 가이드라인)
   const rect = L.rectangle(bounds, { className: 'bounds-rect' });  // 기본값: 체크박스 꺼짐 → 초기에는 추가하지 않음
