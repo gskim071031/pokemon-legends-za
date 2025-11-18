@@ -3,7 +3,7 @@
 > **Pokémon Legends: Z-A**를 위한 **인터랙티브 맵(Interactive Map)** 프로젝트 \
 > 메인 맵과 서브 맵, 핀/구역 마커, 태그 검색, 다국어 등 기능 지원
 
-[사이트 링크](https://gskim071031.github.io/pokemon-legends-za/)
+[사이트 링크](https://gskim071031.github.io/Pokemon-Legends-ZA/)
 
 ---
 
